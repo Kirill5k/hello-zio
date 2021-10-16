@@ -18,7 +18,9 @@ object Dependencies {
       val circe   = "com.softwaremill.sttp.client3" %% "circe"                         % Versions.sttp
     }
 
-    val zio = "dev.zio" %% "zio" % Versions.zio
+    val zio        = "dev.zio" %% "zio"          % Versions.zio
+    val zioTest    = "dev.zio" %% "zio-test"     % Versions.zio % Test
+    val zioTestSbt = "dev.zio" %% "zio-test-sbt" % Versions.zio % Test
 
     val zioHttp     = "io.d11" %% "zhttp"      % Versions.zioHttp
     val zioHttpTest = "io.d11" %% "zhttp-test" % Versions.zioHttp % Test
@@ -27,6 +29,8 @@ object Dependencies {
   lazy val server = Seq(
     Libraries.pureconfig,
     Libraries.zio,
+    Libraries.zioTest,
+    Libraries.zioTestSbt,
     Libraries.zioHttp
   )
 
