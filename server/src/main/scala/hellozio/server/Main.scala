@@ -15,8 +15,8 @@ object Main extends zio.App {
 
   override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] =
     ZIO
-      .tupledPar(ZIO.service[AppConfig].map(_.server), ZIO.service[TodoController].map(_.routes))
-      .flatMap { case (config, routes) => Server.start(config.port, routes) }
+      .services[AppConfig, TodoController]
+      .flatMap { case (config, controller) => Server.start(config.server.port, controller.routes) }
       .orDie
       .provideLayer(layer)
       .exitCode
