@@ -7,6 +7,9 @@ object Dependencies {
     val sttp       = "3.3.15"
     val zio        = "1.0.12"
     val zioHttp    = "1.0.0.0-RC17"
+
+    val scalaTest = "3.2.10"
+    val mockito   = "3.2.10.0"
   }
 
   private object Libraries {
@@ -24,6 +27,9 @@ object Dependencies {
 
     val zioHttp     = "io.d11" %% "zhttp"      % Versions.zioHttp
     val zioHttpTest = "io.d11" %% "zhttp-test" % Versions.zioHttp % Test
+
+    val scalaTest = "org.scalatest"     %% "scalatest"   % Versions.scalaTest % Test
+    val mockito   = "org.scalatestplus" %% "mockito-3-4" % Versions.mockito % Test
   }
 
   lazy val server = Seq(
@@ -31,7 +37,9 @@ object Dependencies {
     Libraries.zio,
     Libraries.zioTest,
     Libraries.zioTestSbt,
-    Libraries.zioHttp
+    Libraries.zioHttp,
+    Libraries.scalaTest,
+    Libraries.mockito
   )
 
   lazy val client = Seq(
