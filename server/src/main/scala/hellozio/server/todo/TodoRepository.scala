@@ -1,9 +1,12 @@
 package hellozio.server.todo
 
 import hellozio.server.AppError
-import zio.{Has, IO, Ref, ZIO, ZLayer}
-
 import java.util.UUID
+import zio.Has
+import zio.IO
+import zio.Ref
+import zio.ZIO
+import zio.ZLayer
 
 trait TodoRepository {
   def create(todo: CreateTodo): IO[AppError.DbError, Todo.Id]
@@ -12,20 +15,22 @@ trait TodoRepository {
 }
 
 final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]) extends TodoRepository {
-  override def create(todo: CreateTodo): IO[AppError.DbError, Todo.Id] =
-    ZIO
-      .effect(UUID.randomUUID().toString)
-      .map(Todo.Id.apply)
-      .tap(id => storage.update(_ + (id -> Todo(id, todo.task, todo.createdAt))))
-      .mapError(e => AppError.DbError(e.getMessage))
 
-  override def getAll: IO[AppError.DbError, List[Todo]] =
-    storage.get.map(_.values.toList)
+  override def create(todo: CreateTodo): IO[AppError.DbError, Todo.Id] = ZIO
+    .effect(UUID.randomUUID().toString)
+    .map(Todo.Id.apply)
+    .tap(id => storage.update(_ + (id -> Todo(id, todo.task, todo.createdAt))))
+    .mapError(e => AppError.DbError(e.getMessage))
 
-  override def getBy(id: Todo.Id): IO[AppError.DbError, Option[Todo]] =
-    storage.get.map(_.get(id))
+  override def getAll: IO[AppError.DbError, List[Todo]] = storage.get.map(_.values.toList)
+
+  override def getBy(id: Todo.Id): IO[AppError.DbError, Option[Todo]] = storage.get.map(_.get(id))
 }
 
 object TodoRepository {
-  val inmemory: ZLayer[Nothing, Nothing, Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory.apply).toLayer
+  val inmemory: ZLayer[Nothing, Nothing, Has[TodoRepository]] =
+    Ref
+      .make(Map.empty[Todo.Id, Todo])
+      .map(TodoRepositoryInmemory.apply)
+      .toLayer
 }
