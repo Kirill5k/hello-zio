@@ -4,6 +4,7 @@ object Dependencies {
 
   private object Versions {
     val circe      = "0.14.1"
+    val logback    = "1.2.6"
     val pureconfig = "0.17.0"
     val sttp       = "3.3.15"
     val tapir      = "0.19.0-M9"
@@ -15,7 +16,8 @@ object Dependencies {
   }
 
   private object Libraries {
-    val pureconfig = "com.github.pureconfig" %% "pureconfig" % Versions.pureconfig
+    val pureconfig = "com.github.pureconfig" %% "pureconfig"      % Versions.pureconfig
+    val logback    = "ch.qos.logback"         % "logback-classic" % Versions.logback
 
     object tapir {
       val core  = "com.softwaremill.sttp.tapir" %% "tapir-core"       % Versions.tapir
@@ -55,6 +57,7 @@ object Dependencies {
   lazy val server =
     Seq(
       Libraries.pureconfig,
+      Libraries.logback,
       Libraries.zio,
       Libraries.zioTest,
       Libraries.zioTestSbt,
