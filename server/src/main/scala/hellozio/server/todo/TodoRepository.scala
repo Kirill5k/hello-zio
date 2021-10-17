@@ -1,13 +1,16 @@
 package hellozio.server.todo
 
 import hellozio.server.AppError
-import zio.{Has, IO, Ref, ULayer, ZIO}
-
 import java.util.UUID
+import zio.Has
+import zio.IO
+import zio.Ref
+import zio.ULayer
+import zio.ZIO
 
 trait TodoRepository {
   def create(todo: CreateTodo): IO[AppError.DbError, Todo.Id]
-  def getBy(id: Todo.Id): IO[AppError.DbError, Option[Todo]]
+  def get(id: Todo.Id): IO[AppError.DbError, Option[Todo]]
   def getAll: IO[AppError.DbError, List[Todo]]
 }
 
@@ -21,13 +24,11 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
 
   override def getAll: IO[AppError.DbError, List[Todo]] = storage.get.map(_.values.toList)
 
-  override def getBy(id: Todo.Id): IO[AppError.DbError, Option[Todo]] = storage.get.map(_.get(id))
+  override def get(id: Todo.Id): IO[AppError.DbError, Option[Todo]] = storage.get.map(_.get(id))
 }
 
 object TodoRepository {
-  val inmemory: ULayer[Has[TodoRepository]] =
-    Ref
-      .make(Map.empty[Todo.Id, Todo])
-      .map(TodoRepositoryInmemory.apply)
-      .toLayer
+
+  val inmemory: ULayer[Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
+
 }
