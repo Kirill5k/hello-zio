@@ -1,12 +1,9 @@
 package hellozio.server.todo
 
 import hellozio.server.AppError
+import zio.{Has, IO, Ref, ULayer, ZIO}
+
 import java.util.UUID
-import zio.Has
-import zio.IO
-import zio.Ref
-import zio.ZIO
-import zio.ZLayer
 
 trait TodoRepository {
   def create(todo: CreateTodo): IO[AppError.DbError, Todo.Id]
@@ -28,7 +25,7 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
 }
 
 object TodoRepository {
-  val inmemory: ZLayer[Nothing, Nothing, Has[TodoRepository]] =
+  val inmemory: ULayer[Has[TodoRepository]] =
     Ref
       .make(Map.empty[Todo.Id, Todo])
       .map(TodoRepositoryInmemory.apply)
