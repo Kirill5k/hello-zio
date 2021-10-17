@@ -8,7 +8,11 @@ import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import sttp.tapir.ztapir._
 import zhttp.http.RHttpApp
-import zio.{Has, URIO, URLayer, ZIO, ZLayer}
+import zio.Has
+import zio.URIO
+import zio.URLayer
+import zio.ZIO
+import zio.ZLayer
 
 trait TodoController {
   def routes: RHttpApp[Any]
@@ -46,7 +50,12 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
         service
           .get(id)
           .mapError(e => ErrorResponse.InternalError(e.message))
-          .flatMap(_.fold(ZIO.fail(ErrorResponse.NotFound(s"Todo with id $id does not exist")))(ZIO.succeed(_)))
+          .flatMap {
+            case Some(todo) =>
+              ZIO.succeed(todo)
+            case None =>
+              ZIO.fail(ErrorResponse.NotFound(s"Todo with id $id does not exist"))
+          }
           .either
       }
 
@@ -64,7 +73,7 @@ object TodoController {
     final case class Unknown(message: String)       extends ErrorResponse
   }
 
-  val live: URLayer[Has[TodoService], Has[TodoController]] = ZLayer
+  val layer: URLayer[Has[TodoService], Has[TodoController]] = ZLayer
     .fromService[TodoService, TodoController](TodoControllerLive)
 
   def routes: URIO[Has[TodoController], RHttpApp[Any]] = ZIO.access[Has[TodoController]](_.get.routes)

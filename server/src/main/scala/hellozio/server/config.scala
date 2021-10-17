@@ -18,7 +18,7 @@ object config {
   )
 
   object AppConfig {
-    val live: ZLayer[Blocking, AppError, Has[AppConfig]] =
+    val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
       blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
         .flatMap {
           case Right(config) => ZIO.succeed(config)
