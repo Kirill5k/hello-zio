@@ -1,6 +1,6 @@
 package hellozio.server
 
-import hellozio.server.config.AppConfig
+import hellozio.server.common.config.AppConfig
 import hellozio.server.todo.TodoController
 import hellozio.server.todo.TodoRepository
 import hellozio.server.todo.TodoService

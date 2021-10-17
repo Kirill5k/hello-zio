@@ -1,6 +1,6 @@
 package hellozio.server.todo
 
-import hellozio.server.errors.AppError
+import hellozio.server.common.errors.AppError
 import zio.Function1ToLayerSyntax
 import zio.Has
 import zio.IO

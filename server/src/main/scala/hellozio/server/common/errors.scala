@@ -1,4 +1,4 @@
-package hellozio.server
+package hellozio.server.common
 
 object errors {
 

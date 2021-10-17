@@ -1,6 +1,6 @@
 package hellozio.server.todo
 
-import hellozio.server.errors.AppError
+import hellozio.server.common.errors.AppError
 import java.util.UUID
 import zio.Has
 import zio.IO
