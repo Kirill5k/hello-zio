@@ -7,15 +7,11 @@ import sttp.tapir.generic.SchemaDerivation
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import sttp.tapir.ztapir._
-import zhttp.http.UHttpApp
-import zio.Has
-import zio.URIO
-import zio.URLayer
-import zio.ZIO
-import zio.ZLayer
+import zhttp.http.RHttpApp
+import zio.{Has, URIO, URLayer, ZIO, ZLayer}
 
 trait TodoController {
-  def routes: UHttpApp
+  def routes: RHttpApp[Any]
 }
 
 final private case class TodoControllerLive(service: TodoService) extends TodoController with SchemaDerivation {
@@ -32,23 +28,28 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
     .in(basepath)
     .errorOut(error)
     .out(jsonBody[List[Todo]])
-    .zServerLogic { _ =>
-      service.getAll.mapError(e => ErrorResponse.InternalError(e.message))
-    }
 
   private val getTodo = endpoint
     .get
     .in(basepath / path[String].map(Todo.Id)(_.value))
     .errorOut(error)
     .out(jsonBody[Todo])
-    .zServerLogic { id =>
-      service
-        .get(id)
-        .mapError(e => ErrorResponse.InternalError(e.message))
-        .flatMap(_.fold(ZIO.fail(ErrorResponse.NotFound(s"Todo with id $id does not exist")))(ZIO.succeed(_)))
-    }
 
-  override def routes: UHttpApp = ???
+  override def routes: RHttpApp[Any] =
+    ZioHttpInterpreter().toHttp(getAllTodos) { _ =>
+      service
+        .getAll
+        .mapError(e => ErrorResponse.InternalError(e.message))
+        .either
+    } <>
+      ZioHttpInterpreter().toHttp(getTodo) { id =>
+        service
+          .get(id)
+          .mapError(e => ErrorResponse.InternalError(e.message))
+          .flatMap(_.fold(ZIO.fail(ErrorResponse.NotFound(s"Todo with id $id does not exist")))(ZIO.succeed(_)))
+          .either
+      }
+
 }
 
 object TodoController {
@@ -66,5 +67,5 @@ object TodoController {
   val live: URLayer[Has[TodoService], Has[TodoController]] = ZLayer
     .fromService[TodoService, TodoController](TodoControllerLive)
 
-  def routes: URIO[Has[TodoController], UHttpApp] = ZIO.access[Has[TodoController]](_.get.routes)
+  def routes: URIO[Has[TodoController], RHttpApp[Any]] = ZIO.access[Has[TodoController]](_.get.routes)
 }
