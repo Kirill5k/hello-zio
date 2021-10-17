@@ -3,7 +3,7 @@ package hellozio.server.todo
 import java.time.Instant
 
 final case class CreateTodo(
-    task: String,
+    task: Todo.Task,
     createdAt: Instant
 )
 
