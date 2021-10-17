@@ -3,7 +3,8 @@ package hellozio.server
 import hellozio.server.errors.AppError
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
-import zio.{Has, Layer, ZIO}
+import zio.{Has, ZIO, ZLayer}
+import zio.blocking.{Blocking, blocking}
 
 object config {
 
@@ -17,9 +18,8 @@ object config {
   )
 
   object AppConfig {
-    val live: Layer[AppError, Has[AppConfig]] =
-      ZIO
-        .effect(ConfigSource.default.load[AppConfig])
+    val live: ZLayer[Blocking, AppError, Has[AppConfig]] =
+      blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
         .flatMap {
           case Right(config) => ZIO.succeed(config)
           case Left(failure) => ZIO.fail(AppError.ConfigError(failure.head.description))
