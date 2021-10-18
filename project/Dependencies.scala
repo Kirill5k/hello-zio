@@ -28,11 +28,12 @@ object Dependencies {
     }
 
     object circe {
-      val core    = "io.circe" %% "circe-core"    % Versions.circe
-      val generic = "io.circe" %% "circe-generic" % Versions.circe
-      val parser  = "io.circe" %% "circe-parser"  % Versions.circe
+      val core    = "io.circe" %% "circe-core"           % Versions.circe
+      val generic = "io.circe" %% "circe-generic"        % Versions.circe
+      val extras  = "io.circe" %% "circe-generic-extras" % Versions.circe
+      val parser  = "io.circe" %% "circe-parser"         % Versions.circe
 
-      val all = Seq(core, generic, parser)
+      val all = Seq(core, generic, parser, extras)
     }
 
     object sttp {

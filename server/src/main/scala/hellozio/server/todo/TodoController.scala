@@ -3,7 +3,9 @@ package hellozio.server.todo
 import hellozio.server.todo.TodoController.CreateTodoRequest
 import hellozio.server.todo.TodoController.CreateTodoResponse
 import hellozio.server.todo.TodoController.ErrorResponse
+import io.circe.Encoder
 import io.circe.generic.auto._
+import io.circe.generic.extras.semiauto._
 import java.time.Instant
 import sttp.model.StatusCode
 import sttp.tapir.generic.SchemaDerivation
@@ -22,6 +24,9 @@ trait TodoController {
 }
 
 final private case class TodoControllerLive(service: TodoService) extends TodoController with SchemaDerivation {
+  implicit val todoIdEncoder: Encoder[Todo.Id]     = deriveUnwrappedEncoder
+  implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
+
   private val basepath = "api" / "todos"
 
   private val error = oneOf[ErrorResponse](
