@@ -1,7 +1,10 @@
 package hellozio.server.todo
 
+import hellozio.server.todo.TodoController.CreateTodoRequest
+import hellozio.server.todo.TodoController.CreateTodoResponse
 import hellozio.server.todo.TodoController.ErrorResponse
 import io.circe.generic.auto._
+import java.time.Instant
 import sttp.model.StatusCode
 import sttp.tapir.generic.SchemaDerivation
 import sttp.tapir.json.circe.jsonBody
@@ -39,6 +42,13 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
     .errorOut(error)
     .out(jsonBody[Todo])
 
+  private val addTodo = endpoint
+    .post
+    .in(basepath)
+    .in(jsonBody[CreateTodoRequest])
+    .errorOut(error)
+    .out(statusCode(StatusCode.Created).and(jsonBody[CreateTodoResponse]))
+
   override def routes: RHttpApp[Any] =
     ZioHttpInterpreter().toHttp(getAllTodos) { _ =>
       service
@@ -57,6 +67,13 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
               ZIO.fail(ErrorResponse.NotFound(s"Todo with id $id does not exist"))
           }
           .either
+      } <>
+      ZioHttpInterpreter().toHttp(addTodo) { req =>
+        service
+          .create(CreateTodo(Todo.Task(req.task), Instant.now()))
+          .mapError(e => ErrorResponse.InternalError(e.message))
+          .map(CreateTodoResponse)
+          .either
       }
 
 }
@@ -72,6 +89,9 @@ object TodoController {
     final case class NotFound(message: String)      extends ErrorResponse
     final case class Unknown(message: String)       extends ErrorResponse
   }
+
+  final case class CreateTodoRequest(task: String)
+  final case class CreateTodoResponse(id: Todo.Id)
 
   val layer: URLayer[Has[TodoService], Has[TodoController]] = ZLayer
     .fromService[TodoService, TodoController](TodoControllerLive)
