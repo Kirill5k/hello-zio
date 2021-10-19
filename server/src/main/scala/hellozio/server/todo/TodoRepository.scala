@@ -25,8 +25,15 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
 
   override def getAll: IO[AppError, List[Todo]] = storage.get.map(_.values.toList)
 
-  override def get(id: Todo.Id): IO[AppError, Todo] =
-    storage.get.flatMap(_.get(id).fold(ZIO.fail(AppError.TodoNotFound(id)))(ZIO.succeed(_)))
+  override def get(id: Todo.Id): IO[AppError, Todo] = storage
+    .get
+    .map(_.get(id))
+    .flatMap {
+      case Some(todo) =>
+        ZIO.succeed(todo)
+      case None =>
+        ZIO.fail(AppError.TodoNotFound(id))
+    }
 
   override def delete(id: Todo.Id): IO[AppError, Unit] = storage
     .get
