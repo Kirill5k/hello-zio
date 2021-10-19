@@ -7,7 +7,6 @@ import hellozio.server.todo.TodoController.ErrorResponse
 import io.circe.Encoder
 import io.circe.generic.auto._
 import io.circe.generic.extras.semiauto._
-import java.time.Instant
 import sttp.model.StatusCode
 import sttp.tapir.generic.SchemaDerivation
 import sttp.tapir.json.circe.jsonBody
@@ -19,9 +18,11 @@ import zio.URIO
 import zio.URLayer
 import zio.ZIO
 import zio.ZLayer
+import zio.clock.Clock
+import zio.clock.currentDateTime
 
 trait TodoController {
-  def routes: RHttpApp[Any]
+  def routes: RHttpApp[Clock]
 }
 
 final private case class TodoControllerLive(service: TodoService) extends TodoController with SchemaDerivation {
@@ -61,7 +62,7 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
     .errorOut(error)
     .out(statusCode(StatusCode.NoContent))
 
-  override def routes: RHttpApp[Any] =
+  override def routes: RHttpApp[Clock] =
     ZioHttpInterpreter().toHttp(getAllTodos) { _ =>
       service
         .getAll
@@ -75,11 +76,13 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
           .either
       } <>
       ZioHttpInterpreter().toHttp(addTodo) { req =>
-        service
-          .create(CreateTodo(Todo.Task(req.task), Instant.now()))
-          .mapError(ErrorResponse.from)
-          .map(CreateTodoResponse)
-          .either
+        currentDateTime.map(_.toInstant).orDie.flatMap { now =>
+          service
+            .create(CreateTodo(Todo.Task(req.task), now))
+            .mapError(ErrorResponse.from)
+            .map(CreateTodoResponse)
+            .either
+        }
       } <>
       ZioHttpInterpreter().toHttp(deleteTodo) { id =>
         service
@@ -117,5 +120,5 @@ object TodoController {
   val layer: URLayer[Has[TodoService], Has[TodoController]] = ZLayer
     .fromService[TodoService, TodoController](TodoControllerLive)
 
-  def routes: URIO[Has[TodoController], RHttpApp[Any]] = ZIO.access[Has[TodoController]](_.get.routes)
+  def routes: URIO[Has[TodoController], RHttpApp[Clock]] = ZIO.access[Has[TodoController]](_.get.routes)
 }

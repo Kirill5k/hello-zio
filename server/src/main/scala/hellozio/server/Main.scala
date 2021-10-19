@@ -5,13 +5,14 @@ import hellozio.server.todo.TodoController
 import hellozio.server.todo.TodoRepository
 import hellozio.server.todo.TodoService
 import zhttp.service.Server
+import zio.clock.Clock
 import zio.{ExitCode, URIO, ZIO}
 
 object Main extends zio.App {
 
   val configLayer = AppConfig.layer
   val httpLayer   = TodoRepository.inmemory >>> TodoService.layer >>> TodoController.layer
-  val layer       = configLayer ++ httpLayer
+  val layer       = configLayer ++ httpLayer ++ Clock.live
 
   override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] =
     ZIO
