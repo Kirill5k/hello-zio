@@ -1,5 +1,6 @@
 package hellozio.server.todo
 
+import hellozio.server.common.errors.AppError
 import hellozio.server.todo.TodoController.CreateTodoRequest
 import hellozio.server.todo.TodoController.CreateTodoResponse
 import hellozio.server.todo.TodoController.ErrorResponse
@@ -54,30 +55,36 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
     .errorOut(error)
     .out(statusCode(StatusCode.Created).and(jsonBody[CreateTodoResponse]))
 
+  private val deleteTodo = endpoint
+    .delete
+    .in(basepath / path[String].map(Todo.Id)(_.value))
+    .errorOut(error)
+    .out(statusCode(StatusCode.NoContent))
+
   override def routes: RHttpApp[Any] =
     ZioHttpInterpreter().toHttp(getAllTodos) { _ =>
       service
         .getAll
-        .mapError(e => ErrorResponse.InternalError(e.message))
+        .mapError(ErrorResponse.from)
         .either
     } <>
       ZioHttpInterpreter().toHttp(getTodo) { id =>
         service
           .get(id)
-          .mapError(e => ErrorResponse.InternalError(e.message))
-          .flatMap {
-            case Some(todo) =>
-              ZIO.succeed(todo)
-            case None =>
-              ZIO.fail(ErrorResponse.NotFound(s"Todo with id $id does not exist"))
-          }
+          .mapError(ErrorResponse.from)
           .either
       } <>
       ZioHttpInterpreter().toHttp(addTodo) { req =>
         service
           .create(CreateTodo(Todo.Task(req.task), Instant.now()))
-          .mapError(e => ErrorResponse.InternalError(e.message))
+          .mapError(ErrorResponse.from)
           .map(CreateTodoResponse)
+          .either
+      } <>
+      ZioHttpInterpreter().toHttp(deleteTodo) { id =>
+        service
+          .delete(id)
+          .mapError(ErrorResponse.from)
           .either
       }
 
@@ -93,6 +100,15 @@ object TodoController {
     final case class InternalError(message: String) extends ErrorResponse
     final case class NotFound(message: String)      extends ErrorResponse
     final case class Unknown(message: String)       extends ErrorResponse
+
+    def from(err: AppError): ErrorResponse =
+      err match {
+        case e: AppError.TodoNotFound =>
+          ErrorResponse.NotFound(e.message)
+        case e =>
+          ErrorResponse.InternalError(e.message)
+      }
+
   }
 
   final case class CreateTodoRequest(task: String)
