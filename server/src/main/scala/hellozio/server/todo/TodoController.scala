@@ -30,6 +30,7 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
   implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
 
   private val basepath = "api" / "todos"
+  private val itemPath = basepath / path[String].map(Todo.Id)(_.value)
 
   private val error = oneOf[ErrorResponse](
     oneOfMapping(StatusCode.NotFound, jsonBody[ErrorResponse.NotFound]),
@@ -45,7 +46,7 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
 
   private val getTodo = endpoint
     .get
-    .in(basepath / path[String].map(Todo.Id)(_.value))
+    .in(itemPath)
     .errorOut(error)
     .out(jsonBody[Todo])
 
@@ -58,7 +59,7 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
 
   private val deleteTodo = endpoint
     .delete
-    .in(basepath / path[String].map(Todo.Id)(_.value))
+    .in(itemPath)
     .errorOut(error)
     .out(statusCode(StatusCode.NoContent))
 

@@ -46,4 +46,8 @@ object TodoRepository {
 
   val inmemory: ULayer[Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
 
+  def create(todo: CreateTodo): ZIO[Has[TodoRepository], AppError, Todo.Id] = ZIO
+    .serviceWith[TodoRepository](_.create(todo))
+
+  def getAll: ZIO[Has[TodoRepository], AppError, List[Todo]] = ZIO.serviceWith[TodoRepository](_.getAll)
 }
