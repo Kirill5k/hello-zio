@@ -10,18 +10,46 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
 
   "A TodoService" should {
 
-    val todos = List(Todos.gen(), Todos.gen())
-
-    "get todos from repository" in {
+    "delete todo" in {
       val repo = mock[TodoRepository]
-      when(repo.getAll).thenReturn(ZIO.succeed(todos))
+      when(repo.delete(Todos.id)).thenReturn(ZIO.unit)
 
       Runtime
         .default
-        .unsafeRunToFuture(TodoService.getAll.provideLayer(mockLayer(repo) >>> TodoService.layer))
-        .map(_ mustBe todos)
+        .unsafeRunToFuture(TodoService.delete(Todos.id).provideLayer(mockLayer(repo)))
+        .map(_ mustBe (()))
+    }
+
+    "get todos from repository" in {
+      val repo = mock[TodoRepository]
+      when(repo.getAll).thenReturn(ZIO.succeed(List(Todos.todo)))
+
+      Runtime
+        .default
+        .unsafeRunToFuture(TodoService.getAll.provideLayer(mockLayer(repo)))
+        .map(_ mustBe List(Todos.todo))
+    }
+
+    "get todo by id" in {
+      val repo = mock[TodoRepository]
+      when(repo.get(Todos.id)).thenReturn(ZIO.succeed(Todos.todo))
+
+      Runtime
+        .default
+        .unsafeRunToFuture(TodoService.get(Todos.id).provideLayer(mockLayer(repo)))
+        .map(_ mustBe Todos.todo)
+    }
+
+    "create new todo" in {
+      val repo = mock[TodoRepository]
+      when(repo.create(Todos.create)).thenReturn(ZIO.succeed(Todos.id))
+
+      Runtime
+        .default
+        .unsafeRunToFuture(TodoService.create(Todos.create).provideLayer(mockLayer(repo)))
+        .map(_ mustBe Todos.id)
     }
   }
 
-  def mockLayer(repo: TodoRepository): ULayer[Has[TodoRepository]] = ZLayer.succeed(repo)
+  def mockLayer(repo: TodoRepository): ULayer[Has[TodoService]] = ZLayer.succeed(repo) >>> TodoService.layer
 }

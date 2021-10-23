@@ -27,4 +27,5 @@ object TodoService {
   def create(todo: CreateTodo): ZIO[Has[TodoService], AppError, Todo.Id] = ZIO.serviceWith[TodoService](_.create(todo))
   def getAll: ZIO[Has[TodoService], AppError, List[Todo]]                = ZIO.serviceWith[TodoService](_.getAll)
   def get(id: Todo.Id): ZIO[Has[TodoService], AppError, Todo]            = ZIO.serviceWith[TodoService](_.get(id))
+  def delete(id: Todo.Id): ZIO[Has[TodoService], AppError, Unit]         = ZIO.serviceWith[TodoService](_.delete(id))
 }
