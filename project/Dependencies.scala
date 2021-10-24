@@ -6,10 +6,9 @@ object Dependencies {
     val circe      = "0.14.1"
     val logback    = "1.2.6"
     val pureconfig = "0.17.0"
-    val sttp       = "3.3.15"
+    val sttp       = "3.3.16"
     val tapir      = "0.19.0-M13"
     val zio        = "1.0.12"
-    val zioHttp    = "1.0.0.0-RC17"
 
     val scalaTest = "3.2.10"
     val mockito   = "3.2.10.0"
@@ -22,7 +21,6 @@ object Dependencies {
     object tapir {
       val core      = "com.softwaremill.sttp.tapir" %% "tapir-core"              % Versions.tapir
       val circe     = "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % Versions.tapir
-      val zio       = "com.softwaremill.sttp.tapir" %% "tapir-zio"               % Versions.tapir
       val ziohttp4s = "com.softwaremill.sttp.tapir" %% "tapir-zio-http4s-server" % Versions.tapir
 
       val all = Seq(core, circe, zio, ziohttp4s)
