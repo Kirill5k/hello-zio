@@ -7,7 +7,7 @@ object Dependencies {
     val logback    = "1.2.6"
     val pureconfig = "0.17.0"
     val sttp       = "3.3.15"
-    val tapir      = "0.19.0-M9"
+    val tapir      = "0.19.0-M13"
     val zio        = "1.0.12"
     val zioHttp    = "1.0.0.0-RC17"
 
@@ -20,11 +20,12 @@ object Dependencies {
     val logback    = "ch.qos.logback"         % "logback-classic" % Versions.logback
 
     object tapir {
-      val core  = "com.softwaremill.sttp.tapir" %% "tapir-core"       % Versions.tapir
-      val circe = "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % Versions.tapir
-      val zio   = "com.softwaremill.sttp.tapir" %% "tapir-zio-http"   % Versions.tapir
+      val core      = "com.softwaremill.sttp.tapir" %% "tapir-core"              % Versions.tapir
+      val circe     = "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % Versions.tapir
+      val zio       = "com.softwaremill.sttp.tapir" %% "tapir-zio"               % Versions.tapir
+      val ziohttp4s = "com.softwaremill.sttp.tapir" %% "tapir-zio-http4s-server" % Versions.tapir
 
-      val all = Seq(core, circe, zio)
+      val all = Seq(core, circe, zio, ziohttp4s)
     }
 
     object circe {
@@ -48,9 +49,6 @@ object Dependencies {
     val zioTest    = "dev.zio" %% "zio-test"     % Versions.zio % Test
     val zioTestSbt = "dev.zio" %% "zio-test-sbt" % Versions.zio % Test
 
-    val zioHttp     = "io.d11" %% "zhttp"      % Versions.zioHttp
-    val zioHttpTest = "io.d11" %% "zhttp-test" % Versions.zioHttp % Test
-
     val scalaTest = "org.scalatest"     %% "scalatest"   % Versions.scalaTest % Test
     val mockito   = "org.scalatestplus" %% "mockito-3-4" % Versions.mockito   % Test
   }
@@ -62,7 +60,6 @@ object Dependencies {
       Libraries.zio,
       Libraries.zioTest,
       Libraries.zioTestSbt,
-      Libraries.zioHttp,
       Libraries.scalaTest,
       Libraries.mockito
     ) ++
