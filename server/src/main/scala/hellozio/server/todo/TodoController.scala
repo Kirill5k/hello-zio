@@ -18,17 +18,14 @@ import zio.RIO
 import zio.URIO
 import zio.URLayer
 import zio.ZIO
-import zio.ZLayer
 import zio.blocking.Blocking
 import zio.clock.Clock
-import zio.clock.currentDateTime
-import zio.interop.catz._
 
 trait TodoController {
-  def routes: HttpRoutes[RIO[Nothing with Clock with Blocking, *]]
+  def routes: HttpRoutes[RIO[Clock with Blocking, *]]
 }
 
-final private case class TodoControllerLive(service: TodoService) extends TodoController with SchemaDerivation {
+final private case class TodoControllerLive(service: TodoService, clock: Clock.Service) extends TodoController with SchemaDerivation {
   implicit val todoIdEncoder: Encoder[Todo.Id]     = deriveUnwrappedEncoder
   implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
 
@@ -41,7 +38,7 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
     oneOfDefaultMapping(jsonBody[ErrorResponse.Unknown])
   )
 
-  private val getAllTodos = endpoint
+  private val getAllTodos: ZServerEndpoint[Any, Unit, ErrorResponse, List[Todo], Any] = endpoint
     .get
     .in(basepath)
     .errorOut(error)
@@ -50,10 +47,9 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
       service
         .getAll
         .mapError(ErrorResponse.from)
-        .either
     }
 
-  private val getTodo = endpoint
+  private val getTodo: ZServerEndpoint[Any, Todo.Id, ErrorResponse, Todo, Any] = endpoint
     .get
     .in(itemPath)
     .errorOut(error)
@@ -62,26 +58,24 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
       service
         .get(id)
         .mapError(ErrorResponse.from)
-        .either
     }
 
-  private val addTodo = endpoint
+  private val addTodo: ZServerEndpoint[Any, CreateTodoRequest, ErrorResponse, CreateTodoResponse, Any] = endpoint
     .post
     .in(basepath)
     .in(jsonBody[CreateTodoRequest])
     .errorOut(error)
     .out(statusCode(StatusCode.Created).and(jsonBody[CreateTodoResponse]))
     .zServerLogic { req =>
-      currentDateTime.map(_.toInstant).orDie.flatMap { now =>
+      clock.currentDateTime.map(_.toInstant).orDie.flatMap { now =>
         service
           .create(CreateTodo(Todo.Task(req.task), now))
           .mapError(ErrorResponse.from)
           .map(CreateTodoResponse)
-          .either
       }
     }
 
-  private val deleteTodo = endpoint
+  private val deleteTodo: ZServerEndpoint[Any, Todo.Id, ErrorResponse, Unit, Any] = endpoint
     .delete
     .in(itemPath)
     .errorOut(error)
@@ -90,17 +84,16 @@ final private case class TodoControllerLive(service: TodoService) extends TodoCo
       service
         .delete(id)
         .mapError(ErrorResponse.from)
-        .either
     }
 
-  override def routes: HttpRoutes[RIO[Nothing with Clock with Blocking, *]] =
-    ZHttp4sServerInterpreter()
+  override def routes: HttpRoutes[RIO[Clock with Blocking, *]] =
+    ZHttp4sServerInterpreter[Any]()
       .from(
         List(
-          getAllTodos,
-          getTodo,
-          addTodo,
-          deleteTodo
+          getAllTodos.widen[Any],
+          getTodo.widen[Any],
+          addTodo.widen[Any],
+          deleteTodo.widen[Any]
         )
       )
       .toRoutes
@@ -131,10 +124,9 @@ object TodoController {
   final case class CreateTodoRequest(task: String)
   final case class CreateTodoResponse(id: Todo.Id)
 
-  val layer: URLayer[Has[TodoService], Has[TodoController]] = ZLayer
-    .fromService[TodoService, TodoController](TodoControllerLive)
+  val layer: URLayer[Has[TodoService] with Clock, Has[TodoController]] = (TodoControllerLive(_, _)).toLayer
 
-  def routes: URIO[Has[TodoController], HttpRoutes[RIO[Nothing with Clock with Blocking, *]]] = ZIO
+  def routes: URIO[Has[TodoController], HttpRoutes[RIO[Clock with Blocking, *]]] = ZIO
     .access[Has[TodoController]](_.get.routes)
 
 }
