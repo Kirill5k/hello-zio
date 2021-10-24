@@ -87,13 +87,13 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
     }
 
   override def routes: HttpRoutes[RIO[Clock with Blocking, *]] =
-    ZHttp4sServerInterpreter[Any]()
+    ZHttp4sServerInterpreter()
       .from(
         List(
-          getAllTodos.widen[Any],
-          getTodo.widen[Any],
-          addTodo.widen[Any],
-          deleteTodo.widen[Any]
+          getAllTodos,
+          getTodo,
+          addTodo,
+          deleteTodo
         )
       )
       .toRoutes
