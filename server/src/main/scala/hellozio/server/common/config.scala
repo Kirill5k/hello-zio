@@ -24,11 +24,8 @@ object config {
 
     val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
       blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
-        .flatMap {
-          case Right(config) =>
-            ZIO.succeed(config)
-          case Left(failure) =>
-            ZIO.fail(AppError.ConfigError(failure.head.description))
+        .flatMap { result =>
+          ZIO.fromEither(result).mapError(e => AppError.ConfigError(e.head.description))
         }
         .orDie
         .toLayer
