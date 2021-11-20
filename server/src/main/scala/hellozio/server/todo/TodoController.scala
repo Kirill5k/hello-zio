@@ -33,12 +33,12 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
   private val itemPath = basepath / path[String].map(Todo.Id)(_.value)
 
   private val error = oneOf[ErrorResponse](
-    oneOfMapping(StatusCode.NotFound, jsonBody[ErrorResponse.NotFound]),
-    oneOfMapping(StatusCode.InternalServerError, jsonBody[ErrorResponse.InternalError]),
-    oneOfDefaultMapping(jsonBody[ErrorResponse.Unknown])
+    oneOfVariant(StatusCode.NotFound, jsonBody[ErrorResponse.NotFound]),
+    oneOfVariant(StatusCode.InternalServerError, jsonBody[ErrorResponse.InternalError]),
+    oneOfDefaultVariant(jsonBody[ErrorResponse.Unknown])
   )
 
-  private val getAllTodos: ZServerEndpoint[Any, Unit, ErrorResponse, List[Todo], Any] = endpoint
+  private val getAllTodos: ZServerEndpoint[Any, Any] = endpoint
     .get
     .in(basepath)
     .errorOut(error)
@@ -49,7 +49,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
         .mapError(ErrorResponse.from)
     }
 
-  private val getTodo: ZServerEndpoint[Any, Todo.Id, ErrorResponse, Todo, Any] = endpoint
+  private val getTodo: ZServerEndpoint[Any, Any] = endpoint
     .get
     .in(itemPath)
     .errorOut(error)
@@ -60,7 +60,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
         .mapError(ErrorResponse.from)
     }
 
-  private val addTodo: ZServerEndpoint[Any, CreateTodoRequest, ErrorResponse, CreateTodoResponse, Any] = endpoint
+  private val addTodo: ZServerEndpoint[Any, Any] = endpoint
     .post
     .in(basepath)
     .in(jsonBody[CreateTodoRequest])
@@ -75,7 +75,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
       }
     }
 
-  private val deleteTodo: ZServerEndpoint[Any, Todo.Id, ErrorResponse, Unit, Any] = endpoint
+  private val deleteTodo: ZServerEndpoint[Any, Any] = endpoint
     .delete
     .in(itemPath)
     .errorOut(error)

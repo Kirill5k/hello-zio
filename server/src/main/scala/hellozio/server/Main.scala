@@ -22,7 +22,8 @@ object Main extends zio.App {
           .services[AppConfig, TodoController]
           .provideLayer(configLayer ++ httpLayer)
           .flatMap { case (config, controller) =>
-            BlazeServerBuilder[RIO[Clock with Blocking, *]](runtime.platform.executor.asEC)
+            BlazeServerBuilder[RIO[Clock with Blocking, *]]
+              .withExecutionContext(runtime.platform.executor.asEC)
               .bindHttp(config.server.port, config.server.host)
               .withHttpApp(Router("/" -> controller.routes).orNotFound)
               .serve

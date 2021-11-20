@@ -4,10 +4,10 @@ object Dependencies {
 
   private object Versions {
     val circe      = "0.14.1"
-    val logback    = "1.2.6"
+    val logback    = "1.2.7"
     val pureconfig = "0.17.0"
     val sttp       = "3.3.16"
-    val tapir      = "0.19.0-M13"
+    val tapir      = "0.19.0"
     val zio        = "1.0.12"
 
     val scalaTest = "3.2.10"
@@ -51,8 +51,7 @@ object Dependencies {
     val mockito   = "org.scalatestplus" %% "mockito-3-4" % Versions.mockito   % Test
   }
 
-  lazy val server =
-    Seq(
+  lazy val server = Seq(
       Libraries.pureconfig,
       Libraries.logback,
       Libraries.zio,
