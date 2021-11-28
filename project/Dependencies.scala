@@ -9,6 +9,7 @@ object Dependencies {
     val sttp       = "3.3.16"
     val tapir      = "0.19.0"
     val zio        = "1.0.12"
+    val zioKafka   = "0.17.1"
 
     val scalaTest = "3.2.10"
     val mockito   = "3.2.10.0"
@@ -43,20 +44,21 @@ object Dependencies {
       val all = Seq(core, backend, circe)
     }
 
-    val zio        = "dev.zio" %% "zio"          % Versions.zio
-    val zioTest    = "dev.zio" %% "zio-test"     % Versions.zio % Test
-    val zioTestSbt = "dev.zio" %% "zio-test-sbt" % Versions.zio % Test
+    val zio        = "dev.zio" %% "zio"         % Versions.zio
+    val zioStreams = "dev.zio" %% "zio-streams" % Versions.zio
+    val zioKafka   = "dev.zio" %% "zio-kafka"   % Versions.zioKafka
 
     val scalaTest = "org.scalatest"     %% "scalatest"   % Versions.scalaTest % Test
     val mockito   = "org.scalatestplus" %% "mockito-3-4" % Versions.mockito   % Test
   }
 
-  lazy val server = Seq(
+  lazy val server =
+    Seq(
       Libraries.pureconfig,
       Libraries.logback,
       Libraries.zio,
-      Libraries.zioTest,
-      Libraries.zioTestSbt,
+      Libraries.zioStreams,
+      Libraries.zioKafka,
       Libraries.scalaTest,
       Libraries.mockito
     ) ++

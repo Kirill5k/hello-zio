@@ -16,8 +16,13 @@ object config {
       port: Int
   )
 
+  final case class KafkaConfig(
+      bootstrapServers: String
+  )
+
   final case class AppConfig(
-      server: ServerConfig
+      server: ServerConfig,
+      kafka: KafkaConfig
   )
 
   object AppConfig {
