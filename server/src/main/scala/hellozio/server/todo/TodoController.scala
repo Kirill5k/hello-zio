@@ -4,6 +4,7 @@ import hellozio.server.common.errors.AppError
 import hellozio.server.todo.TodoController.CreateTodoRequest
 import hellozio.server.todo.TodoController.CreateTodoResponse
 import hellozio.server.todo.TodoController.ErrorResponse
+import hellozio.server.todo.TodoController.ErrorResponse.BadRequest
 import io.circe.Encoder
 import io.circe.generic.auto._
 import io.circe.generic.extras.semiauto._
@@ -25,7 +26,8 @@ trait TodoController {
   def routes: HttpRoutes[RIO[Clock with Blocking, *]]
 }
 
-final private case class TodoControllerLive(service: TodoService, clock: Clock.Service) extends TodoController with SchemaDerivation {
+final private case class TodoControllerLive(service: TodoService, clock: Clock.Service)
+    extends TodoController with SchemaDerivation {
   implicit val todoIdEncoder: Encoder[Todo.Id]     = deriveUnwrappedEncoder
   implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
 
@@ -33,6 +35,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
   private val itemPath = basepath / path[String].map(Todo.Id)(_.value)
 
   private val error = oneOf[ErrorResponse](
+    oneOfVariant(StatusCode.BadRequest, jsonBody[ErrorResponse.BadRequest]),
     oneOfVariant(StatusCode.NotFound, jsonBody[ErrorResponse.NotFound]),
     oneOfVariant(StatusCode.InternalServerError, jsonBody[ErrorResponse.InternalError]),
     oneOfDefaultVariant(jsonBody[ErrorResponse.Unknown])
@@ -86,6 +89,18 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
         .mapError(ErrorResponse.from)
     }
 
+  private val updateTodo: ZServerEndpoint[Any, Any] = endpoint
+    .put
+    .in(itemPath)
+    .in(jsonBody[Todo])
+    .errorOut(error)
+    .out(statusCode(StatusCode.NoContent))
+    .zServerLogic { case (id, todo) =>
+      ZIO
+        .cond(id == todo.id, todo, BadRequest("id in path is different from id in request body"))
+        .flatMap(todo => service.update(todo).mapError(ErrorResponse.from))
+    }
+
   override def routes: HttpRoutes[RIO[Clock with Blocking, *]] =
     ZHttp4sServerInterpreter()
       .from(
@@ -93,7 +108,8 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
           getAllTodos,
           getTodo,
           addTodo,
-          deleteTodo
+          deleteTodo,
+          updateTodo
         )
       )
       .toRoutes
@@ -109,14 +125,13 @@ object TodoController {
   object ErrorResponse {
     final case class InternalError(message: String) extends ErrorResponse
     final case class NotFound(message: String)      extends ErrorResponse
+    final case class BadRequest(message: String)    extends ErrorResponse
     final case class Unknown(message: String)       extends ErrorResponse
 
     def from(err: AppError): ErrorResponse =
       err match {
-        case e: AppError.TodoNotFound =>
-          ErrorResponse.NotFound(e.message)
-        case e =>
-          ErrorResponse.InternalError(e.message)
+        case e: AppError.TodoNotFound => ErrorResponse.NotFound(e.message)
+        case e                        => ErrorResponse.InternalError(e.message)
       }
 
   }

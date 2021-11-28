@@ -4,7 +4,11 @@ import org.mockito.Mockito.when
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatestplus.mockito.MockitoSugar
-import zio.{Has, ULayer, ZIO, ZLayer, Runtime}
+import zio.Has
+import zio.Runtime
+import zio.ULayer
+import zio.ZIO
+import zio.ZLayer
 
 class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
 
@@ -17,6 +21,16 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
       Runtime
         .default
         .unsafeRunToFuture(TodoService.delete(Todos.id).provideLayer(mockLayer(repo)))
+        .map(_ mustBe (()))
+    }
+
+    "update todo" in {
+      val repo = mock[TodoRepository]
+      when(repo.update(Todos.todo)).thenReturn(ZIO.unit)
+
+      Runtime
+        .default
+        .unsafeRunToFuture(TodoService.update(Todos.todo).provideLayer(mockLayer(repo)))
         .map(_ mustBe (()))
     }
 

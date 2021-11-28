@@ -10,6 +10,7 @@ import zio.ZIO
 
 trait TodoRepository {
   def create(todo: CreateTodo): IO[AppError, Todo]
+  def update(todo: Todo): IO[AppError, Unit]
   def get(id: Todo.Id): IO[AppError, Todo]
   def getAll: IO[AppError, List[Todo]]
   def delete(id: Todo.Id): IO[AppError, Unit]
@@ -38,6 +39,11 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
     .filterOrFail(_.contains(id))(AppError.TodoNotFound(id))
     .flatMap(s => storage.set(s.removed(id)))
 
+  override def update(todo: Todo): IO[AppError, Unit] = storage
+    .get
+    .filterOrFail(_.contains(todo.id))(AppError.TodoNotFound(todo.id))
+    .flatMap(s => storage.set(s + (todo.id -> todo)))
+
 }
 
 object TodoRepository {
@@ -50,4 +56,5 @@ object TodoRepository {
   def getAll: ZIO[Has[TodoRepository], AppError, List[Todo]]        = ZIO.serviceWith[TodoRepository](_.getAll)
   def get(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Todo]    = ZIO.serviceWith[TodoRepository](_.get(id))
   def delete(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Unit] = ZIO.serviceWith[TodoRepository](_.delete(id))
+  def update(todo: Todo): ZIO[Has[TodoRepository], AppError, Unit]  = ZIO.serviceWith[TodoRepository](_.update(todo))
 }
