@@ -1,9 +1,10 @@
 import com.typesafe.sbt.packager.docker._
 
-ThisBuild / scalaVersion                        := "2.13.6"
+ThisBuild / scalaVersion                        := "2.13.7"
 ThisBuild / version                             := scala.sys.process.Process("git rev-parse HEAD").!!.trim.slice(0, 7)
 ThisBuild / organization                        := "io.github.kirill5k"
-ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+ThisBuild / githubWorkflowPublishTargetBranches := Nil
+ThisBuild / githubWorkflowJavaVersions          := Seq("amazon-corretto@1.17")
 
 lazy val noPublish = Seq(
   publish         := {},
@@ -16,9 +17,9 @@ lazy val docker = Seq(
   packageName        := moduleName.value,
   version            := version.value,
   maintainer         := "immotional@aol.com",
-  dockerBaseImage    := "adoptopenjdk/openjdk16-openj9:x86_64-alpine-jre-16_36_openj9-0.25.0",
+  dockerBaseImage    := "amazoncorretto:17.0.1-alpine",
   dockerUpdateLatest := true,
-  makeBatScripts     := List(),
+  makeBatScripts     := Nil,
   dockerCommands := {
     val commands         = dockerCommands.value
     val (stage0, stage1) = commands.span(_ != DockerStageBreak)
@@ -34,16 +35,17 @@ lazy val root = project
   .settings(
     name := "hello-zio"
   )
-  .aggregate(client, server)
+  .aggregate(consumer, server)
 
-lazy val client = project
-  .in(file("client"))
+lazy val consumer = project
+  .in(file("consumer"))
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
   .settings(docker)
   .settings(
-    name       := "hello-zio-client",
-    moduleName := "client",
-    libraryDependencies ++= Dependencies.client
+    name       := "hello-zio-consumer",
+    moduleName := "consumer",
+    libraryDependencies ++= Dependencies.consumer,
+    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
 
 lazy val server = project

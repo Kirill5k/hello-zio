@@ -65,11 +65,17 @@ object Dependencies {
       Libraries.circe.all ++
       Libraries.tapir.all
 
-  lazy val client = Seq(
-    Libraries.zio,
-    Libraries.sttp.core,
-    Libraries.sttp.backend,
-    Libraries.sttp.circe
-  )
+  lazy val consumer =
+    Seq(
+      Libraries.pureconfig,
+      Libraries.logback,
+      Libraries.zio,
+      Libraries.zio,
+      Libraries.zioStreams,
+      Libraries.zioKafka,
+      Libraries.scalaTest,
+      Libraries.mockito
+    ) ++
+      Libraries.circe.all
 
 }
