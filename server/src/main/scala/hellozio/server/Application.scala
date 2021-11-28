@@ -9,7 +9,7 @@ import zio.blocking.Blocking
 import zio.clock.Clock
 import zio.interop.catz._
 
-object Main extends zio.App {
+object Application extends zio.App {
 
   val configLayer = Blocking.live >>> AppConfig.layer
   val httpLayer   = TodoRepository.inmemory >>> (TodoService.layer ++ Clock.live) >>> TodoController.layer
