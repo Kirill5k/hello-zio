@@ -18,8 +18,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
       val repo = mock[TodoRepository]
       when(repo.delete(Todos.id)).thenReturn(ZIO.unit)
 
-      Runtime
-        .default
+      Runtime.default
         .unsafeRunToFuture(TodoService.delete(Todos.id).provideLayer(mockLayer(repo)))
         .map(_ mustBe (()))
     }
@@ -28,8 +27,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
       val repo = mock[TodoRepository]
       when(repo.update(Todos.todo)).thenReturn(ZIO.unit)
 
-      Runtime
-        .default
+      Runtime.default
         .unsafeRunToFuture(TodoService.update(Todos.todo).provideLayer(mockLayer(repo)))
         .map(_ mustBe (()))
     }
@@ -38,8 +36,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
       val repo = mock[TodoRepository]
       when(repo.getAll).thenReturn(ZIO.succeed(List(Todos.todo)))
 
-      Runtime
-        .default
+      Runtime.default
         .unsafeRunToFuture(TodoService.getAll.provideLayer(mockLayer(repo)))
         .map(_ mustBe List(Todos.todo))
     }
@@ -48,8 +45,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
       val repo = mock[TodoRepository]
       when(repo.get(Todos.id)).thenReturn(ZIO.succeed(Todos.todo))
 
-      Runtime
-        .default
+      Runtime.default
         .unsafeRunToFuture(TodoService.get(Todos.id).provideLayer(mockLayer(repo)))
         .map(_ mustBe Todos.todo)
     }
@@ -58,8 +54,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
       val repo = mock[TodoRepository]
       when(repo.create(Todos.create)).thenReturn(ZIO.succeed(Todos.todo))
 
-      Runtime
-        .default
+      Runtime.default
         .unsafeRunToFuture(TodoService.create(Todos.create).provideLayer(mockLayer(repo)))
         .map(_ mustBe Todos.id)
     }

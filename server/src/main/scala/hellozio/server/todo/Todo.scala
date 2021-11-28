@@ -23,7 +23,7 @@ sealed trait TodoUpdate {
 }
 
 object TodoUpdate {
-  final case class Created(id: Todo.Id, todo: Todo)  extends TodoUpdate
-  final case class Updated(id: Todo.Id, todo: Todo)  extends TodoUpdate
-  final case class Deleted(id: Todo.Id) extends TodoUpdate
+  final case class Created(id: Todo.Id, todo: Todo) extends TodoUpdate
+  final case class Updated(id: Todo.Id, todo: Todo) extends TodoUpdate
+  final case class Deleted(id: Todo.Id)             extends TodoUpdate
 }

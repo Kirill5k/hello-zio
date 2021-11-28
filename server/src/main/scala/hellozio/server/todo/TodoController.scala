@@ -26,8 +26,7 @@ trait TodoController {
   def routes: HttpRoutes[RIO[Clock with Blocking, *]]
 }
 
-final private case class TodoControllerLive(service: TodoService, clock: Clock.Service)
-    extends TodoController with SchemaDerivation {
+final private case class TodoControllerLive(service: TodoService, clock: Clock.Service) extends TodoController with SchemaDerivation {
   implicit val todoIdEncoder: Encoder[Todo.Id]     = deriveUnwrappedEncoder
   implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
 
@@ -41,19 +40,16 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
     oneOfDefaultVariant(jsonBody[ErrorResponse.Unknown])
   )
 
-  private val getAllTodos: ZServerEndpoint[Any, Any] = endpoint
-    .get
+  private val getAllTodos: ZServerEndpoint[Any, Any] = endpoint.get
     .in(basepath)
     .errorOut(error)
     .out(jsonBody[List[Todo]])
     .zServerLogic { _ =>
-      service
-        .getAll
+      service.getAll
         .mapError(ErrorResponse.from)
     }
 
-  private val getTodo: ZServerEndpoint[Any, Any] = endpoint
-    .get
+  private val getTodo: ZServerEndpoint[Any, Any] = endpoint.get
     .in(itemPath)
     .errorOut(error)
     .out(jsonBody[Todo])
@@ -63,8 +59,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
         .mapError(ErrorResponse.from)
     }
 
-  private val addTodo: ZServerEndpoint[Any, Any] = endpoint
-    .post
+  private val addTodo: ZServerEndpoint[Any, Any] = endpoint.post
     .in(basepath)
     .in(jsonBody[CreateTodoRequest])
     .errorOut(error)
@@ -78,8 +73,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
       }
     }
 
-  private val deleteTodo: ZServerEndpoint[Any, Any] = endpoint
-    .delete
+  private val deleteTodo: ZServerEndpoint[Any, Any] = endpoint.delete
     .in(itemPath)
     .errorOut(error)
     .out(statusCode(StatusCode.NoContent))
@@ -89,8 +83,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
         .mapError(ErrorResponse.from)
     }
 
-  private val updateTodo: ZServerEndpoint[Any, Any] = endpoint
-    .put
+  private val updateTodo: ZServerEndpoint[Any, Any] = endpoint.put
     .in(itemPath)
     .in(jsonBody[Todo])
     .errorOut(error)
