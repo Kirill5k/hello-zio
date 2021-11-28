@@ -18,6 +18,12 @@ final case class CreateTodo(
     createdAt: Instant
 )
 
-sealed trait TodoUpdate
+sealed trait TodoUpdate {
+  def id: Todo.Id
+}
 
-object TodoUpdate {}
+object TodoUpdate {
+  final case class Created(id: Todo.Id, todo: Todo)  extends TodoUpdate
+  final case class Updated(id: Todo.Id, todo: Todo)  extends TodoUpdate
+  final case class Deleted(id: Todo.Id) extends TodoUpdate
+}

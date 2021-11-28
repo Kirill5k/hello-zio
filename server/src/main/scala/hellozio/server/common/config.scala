@@ -17,7 +17,8 @@ object config {
   )
 
   final case class KafkaConfig(
-      bootstrapServers: String
+      bootstrapServers: String,
+      topic: String
   )
 
   final case class AppConfig(
