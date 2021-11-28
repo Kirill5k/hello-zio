@@ -9,7 +9,7 @@ import zio.ULayer
 import zio.ZIO
 
 trait TodoRepository {
-  def create(todo: CreateTodo): IO[AppError, Todo.Id]
+  def create(todo: CreateTodo): IO[AppError, Todo]
   def get(id: Todo.Id): IO[AppError, Todo]
   def getAll: IO[AppError, List[Todo]]
   def delete(id: Todo.Id): IO[AppError, Unit]
@@ -17,10 +17,10 @@ trait TodoRepository {
 
 final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]) extends TodoRepository {
 
-  override def create(todo: CreateTodo): IO[AppError, Todo.Id] = ZIO
+  override def create(todo: CreateTodo): IO[AppError, Todo] = ZIO
     .effect(UUID.randomUUID().toString)
-    .map(Todo.Id.apply)
-    .tap(id => storage.update(_ + (id -> Todo(id, todo.task, todo.createdAt))))
+    .map(id => Todo(Todo.Id(id), todo.task, todo.createdAt))
+    .tap(todo => storage.update(_ + (todo.id -> todo)))
     .mapError(e => AppError.DbError(e.getMessage))
 
   override def getAll: IO[AppError, List[Todo]] = storage.get.map(_.values.toList)
@@ -29,10 +29,8 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
     .get
     .map(_.get(id))
     .flatMap {
-      case Some(todo) =>
-        ZIO.succeed(todo)
-      case None =>
-        ZIO.fail(AppError.TodoNotFound(id))
+      case Some(todo) => ZIO.succeed(todo)
+      case None       => ZIO.fail(AppError.TodoNotFound(id))
     }
 
   override def delete(id: Todo.Id): IO[AppError, Unit] = storage
@@ -46,7 +44,7 @@ object TodoRepository {
 
   val inmemory: ULayer[Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
 
-  def create(todo: CreateTodo): ZIO[Has[TodoRepository], AppError, Todo.Id] = ZIO
+  def create(todo: CreateTodo): ZIO[Has[TodoRepository], AppError, Todo] = ZIO
     .serviceWith[TodoRepository](_.create(todo))
 
   def getAll: ZIO[Has[TodoRepository], AppError, List[Todo]]        = ZIO.serviceWith[TodoRepository](_.getAll)

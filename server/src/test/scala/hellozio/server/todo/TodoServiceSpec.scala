@@ -42,7 +42,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
 
     "create new todo" in {
       val repo = mock[TodoRepository]
-      when(repo.create(Todos.create)).thenReturn(ZIO.succeed(Todos.id))
+      when(repo.create(Todos.create)).thenReturn(ZIO.succeed(Todos.todo))
 
       Runtime
         .default

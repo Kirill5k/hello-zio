@@ -15,7 +15,7 @@ trait TodoService {
 }
 
 final private case class TodoServiceLive(repository: TodoRepository) extends TodoService {
-  override def create(todo: CreateTodo): IO[AppError, Todo.Id] = repository.create(todo)
+  override def create(todo: CreateTodo): IO[AppError, Todo.Id] = repository.create(todo).map(_.id)
   override def getAll: IO[AppError, List[Todo]]                = repository.getAll
   override def get(id: Todo.Id): IO[AppError, Todo]            = repository.get(id)
   override def delete(id: Todo.Id): IO[AppError, Unit]         = repository.delete(id)
