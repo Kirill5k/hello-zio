@@ -52,7 +52,7 @@ object Dependencies {
     val mockito   = "org.scalatestplus" %% "mockito-3-4" % Versions.mockito   % Test
   }
 
-  lazy val server =
+  lazy val api =
     Seq(
       Libraries.pureconfig,
       Libraries.logback,

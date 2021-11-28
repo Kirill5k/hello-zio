@@ -35,7 +35,7 @@ lazy val root = project
   .settings(
     name := "hello-zio"
   )
-  .aggregate(consumer, server)
+  .aggregate(consumer, api)
 
 lazy val consumer = project
   .in(file("consumer"))
@@ -48,13 +48,13 @@ lazy val consumer = project
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
 
-lazy val server = project
-  .in(file("server"))
+lazy val api = project
+  .in(file("api"))
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
   .settings(docker)
   .settings(
-    name       := "hello-zio-server",
-    moduleName := "server",
-    libraryDependencies ++= Dependencies.server,
+    name       := "hello-zio-api",
+    moduleName := "api",
+    libraryDependencies ++= Dependencies.api,
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
