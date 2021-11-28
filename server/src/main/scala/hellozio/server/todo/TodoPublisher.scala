@@ -5,6 +5,7 @@ import hellozio.server.common.errors.AppError
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
+import org.apache.kafka.clients.producer.ProducerRecord
 import zio.Has
 import zio.IO
 import zio.URLayer
@@ -22,7 +23,17 @@ final private case class TodoPublisherLive(
     producer: Producer,
     topic: String
 ) extends TodoPublisher {
-  override def send(update: TodoUpdate): IO[AppError, Unit] = ???
+
+  override def send(update: TodoUpdate): IO[AppError, Unit] =
+      producer
+        .produce(
+          new ProducerRecord[Todo.Id, TodoUpdate](topic, update.id, update),
+          TodoPublisher.todoIdSerde,
+          TodoPublisher.todoUpdateSerde
+        )
+        .mapError(e => AppError.KafkaError(e.getMessage))
+        .unit
+
 }
 
 object TodoPublisher {
