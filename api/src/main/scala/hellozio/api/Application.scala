@@ -1,7 +1,7 @@
-package hellozio.server
+package hellozio.api
 
-import hellozio.server.common.config.AppConfig
-import hellozio.server.todo.{TodoController, TodoRepository, TodoService}
+import hellozio.api.common.config.AppConfig
+import hellozio.api.todo.{TodoController, TodoRepository, TodoService}
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.Router
 import zio.{ExitCode, RIO, URIO, ZEnv, ZIO}

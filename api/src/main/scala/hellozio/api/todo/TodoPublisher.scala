@@ -1,7 +1,8 @@
-package hellozio.server.todo
+package hellozio.api.todo
 
-import hellozio.server.common.config.AppConfig
-import hellozio.server.common.errors.AppError
+import hellozio.api.common.config.AppConfig
+import hellozio.domain.common.errors.AppError
+import hellozio.domain.todo.{Todo, TodoUpdate}
 import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.Json

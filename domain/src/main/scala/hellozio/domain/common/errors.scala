@@ -1,6 +1,6 @@
-package hellozio.server.common
+package hellozio.domain.common
 
-import hellozio.server.todo.Todo
+import hellozio.domain.todo.Todo
 
 object errors {
 

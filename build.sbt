@@ -35,10 +35,19 @@ lazy val root = project
   .settings(
     name := "hello-zio"
   )
-  .aggregate(consumer, api)
+  .aggregate(consumer, api, domain)
+
+lazy val domain = project
+  .in(file("domain"))
+  .settings(noPublish)
+  .settings(
+    name       := "hello-zio-domain",
+    moduleName := "domain"
+  )
 
 lazy val consumer = project
   .in(file("consumer"))
+  .dependsOn(domain)
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
   .settings(docker)
   .settings(
@@ -50,6 +59,7 @@ lazy val consumer = project
 
 lazy val api = project
   .in(file("api"))
+  .dependsOn(domain)
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
   .settings(docker)
   .settings(

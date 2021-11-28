@@ -1,6 +1,7 @@
-package hellozio.server.todo
+package hellozio.api.todo
 
-import hellozio.server.common.errors.AppError
+import hellozio.domain.common.errors.AppError
+import hellozio.domain.todo.Todo
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 import zio.Runtime

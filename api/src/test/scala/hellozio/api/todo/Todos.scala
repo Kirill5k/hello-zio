@@ -1,4 +1,6 @@
-package hellozio.server.todo
+package hellozio.api.todo
+
+import hellozio.domain.todo.{CreateTodo, Todo}
 
 import java.time.Instant
 import java.util.UUID

@@ -1,10 +1,11 @@
-package hellozio.server.todo
+package hellozio.api.todo
 
-import hellozio.server.common.errors.AppError
-import hellozio.server.todo.TodoController.CreateTodoRequest
-import hellozio.server.todo.TodoController.CreateTodoResponse
-import hellozio.server.todo.TodoController.ErrorResponse
-import hellozio.server.todo.TodoController.ErrorResponse.BadRequest
+import hellozio.domain.todo._
+import hellozio.domain.common.errors.AppError
+import hellozio.api.todo.TodoController.CreateTodoRequest
+import hellozio.api.todo.TodoController.CreateTodoResponse
+import hellozio.api.todo.TodoController.ErrorResponse
+import hellozio.api.todo.TodoController.ErrorResponse.BadRequest
 import io.circe.Encoder
 import io.circe.generic.auto._
 import io.circe.generic.extras.semiauto._

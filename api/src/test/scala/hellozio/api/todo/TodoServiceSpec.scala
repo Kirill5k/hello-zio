@@ -1,4 +1,4 @@
-package hellozio.server.todo
+package hellozio.api.todo
 
 import org.mockito.Mockito.when
 import org.scalatest.matchers.must.Matchers

@@ -1,6 +1,8 @@
-package hellozio.server.todo
+package hellozio.api.todo
 
-import hellozio.server.common.errors.AppError
+import hellozio.domain.common.errors.AppError
+import hellozio.domain.todo.{CreateTodo, Todo}
+
 import java.util.UUID
 import zio.Has
 import zio.IO

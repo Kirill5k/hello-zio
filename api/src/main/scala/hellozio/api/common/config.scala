@@ -1,6 +1,6 @@
-package hellozio.server.common
+package hellozio.api.common
 
-import hellozio.server.common.errors.AppError
+import hellozio.domain.common.errors.AppError
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 import zio.Has

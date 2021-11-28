@@ -1,4 +1,4 @@
-package hellozio.server.todo
+package hellozio.domain.todo
 
 import java.time.Instant
 
