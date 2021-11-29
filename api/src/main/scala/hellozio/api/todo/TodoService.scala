@@ -2,7 +2,7 @@ package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{CreateTodo, Todo}
-import zio.Function1ToLayerSyntax
+import zio.Function2ToLayerSyntax
 import zio.Has
 import zio.IO
 import zio.URLayer
@@ -16,7 +16,7 @@ trait TodoService {
   def update(todo: Todo): IO[AppError, Unit]
 }
 
-final private case class TodoServiceLive(repository: TodoRepository) extends TodoService {
+final private case class TodoServiceLive(repository: TodoRepository, publisher: TodoPublisher) extends TodoService {
   override def create(todo: CreateTodo): IO[AppError, Todo.Id] = repository.create(todo).map(_.id)
   override def getAll: IO[AppError, List[Todo]]                = repository.getAll
   override def get(id: Todo.Id): IO[AppError, Todo]            = repository.get(id)
@@ -25,7 +25,7 @@ final private case class TodoServiceLive(repository: TodoRepository) extends Tod
 }
 
 object TodoService {
-  val layer: URLayer[Has[TodoRepository], Has[TodoService]] = (TodoServiceLive(_)).toLayer
+  lazy val layer: URLayer[Has[TodoRepository] with Has[TodoPublisher], Has[TodoService]] = (TodoServiceLive(_, _)).toLayer
 
   def create(todo: CreateTodo): ZIO[Has[TodoService], AppError, Todo.Id] = ZIO.serviceWith[TodoService](_.create(todo))
   def getAll: ZIO[Has[TodoService], AppError, List[Todo]]                = ZIO.serviceWith[TodoService](_.getAll)

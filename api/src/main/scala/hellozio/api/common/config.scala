@@ -28,7 +28,7 @@ object config {
 
   object AppConfig {
 
-    val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
+    lazy val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
       blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
         .flatMap { result =>
           ZIO.fromEither(result).mapError(e => AppError.ConfigError(e.head.description))

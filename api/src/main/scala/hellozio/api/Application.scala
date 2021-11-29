@@ -1,7 +1,7 @@
 package hellozio.api
 
 import hellozio.api.common.config.AppConfig
-import hellozio.api.todo.{TodoController, TodoRepository, TodoService}
+import hellozio.api.todo.{TodoController, TodoPublisher, TodoRepository, TodoService}
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.Router
 import zio.{ExitCode, RIO, URIO, ZEnv, ZIO}
@@ -11,8 +11,11 @@ import zio.interop.catz._
 
 object Application extends zio.App {
 
-  val configLayer = Blocking.live >>> AppConfig.layer
-  val httpLayer   = TodoRepository.inmemory >>> (TodoService.layer ++ Clock.live) >>> TodoController.layer
+  val configLayer    = Blocking.live >>> AppConfig.layer
+  val publisherLayer = (Blocking.live ++ configLayer) >>> TodoPublisher.live
+  val repoLayer      = TodoRepository.inmemory
+  val serviceLayer   = (publisherLayer ++ repoLayer) >>> TodoService.layer
+  val httpLayer      = (serviceLayer ++ Clock.live) >>> TodoController.layer
 
   override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] =
     ZIO

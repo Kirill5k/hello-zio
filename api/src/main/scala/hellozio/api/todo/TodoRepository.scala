@@ -47,7 +47,7 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
 
 object TodoRepository {
 
-  val inmemory: ULayer[Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
+  lazy val inmemory: ULayer[Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
 
   def create(todo: CreateTodo): ZIO[Has[TodoRepository], AppError, Todo] = ZIO
     .serviceWith[TodoRepository](_.create(todo))

@@ -36,7 +36,7 @@ final private case class TodoPublisherLive(
 
 object TodoPublisher {
 
-  val live: URLayer[Has[AppConfig] with Blocking, Has[TodoPublisher]] =
+  lazy val live: URLayer[Has[AppConfig] with Blocking, Has[TodoPublisher]] =
     ZIO
       .access[Has[AppConfig]](_.get)
       .toManaged_
