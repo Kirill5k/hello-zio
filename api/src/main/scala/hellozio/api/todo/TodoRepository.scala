@@ -49,11 +49,9 @@ object TodoRepository {
 
   lazy val inmemory: ULayer[Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
 
-  def create(todo: CreateTodo): ZIO[Has[TodoRepository], AppError, Todo] = ZIO
-    .serviceWith[TodoRepository](_.create(todo))
-
-  def getAll: ZIO[Has[TodoRepository], AppError, List[Todo]]        = ZIO.serviceWith[TodoRepository](_.getAll)
-  def get(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Todo]    = ZIO.serviceWith[TodoRepository](_.get(id))
-  def delete(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Unit] = ZIO.serviceWith[TodoRepository](_.delete(id))
-  def update(todo: Todo): ZIO[Has[TodoRepository], AppError, Unit]  = ZIO.serviceWith[TodoRepository](_.update(todo))
+  def create(todo: CreateTodo): ZIO[Has[TodoRepository], AppError, Todo] = ZIO.serviceWith[TodoRepository](_.create(todo))
+  def getAll: ZIO[Has[TodoRepository], AppError, List[Todo]]             = ZIO.serviceWith[TodoRepository](_.getAll)
+  def get(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Todo]         = ZIO.serviceWith[TodoRepository](_.get(id))
+  def delete(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Unit]      = ZIO.serviceWith[TodoRepository](_.delete(id))
+  def update(todo: Todo): ZIO[Has[TodoRepository], AppError, Unit]       = ZIO.serviceWith[TodoRepository](_.update(todo))
 }
