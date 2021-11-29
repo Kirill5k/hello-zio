@@ -46,3 +46,22 @@ services:
       SCHEMA_REGISTRY_AVRO_COMPATIBILITY_LEVEL: FULL
     ports:
       - "8081:8081"
+
+  api:
+    image: hello-zio-api:latest
+    restart: always
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      PORT: "7070"
+    ports:
+      - "7070:7070"
+    depends_on:
+      - kafka
+
+  consumer:
+    image: hello-zio-consumer:latest
+    restart: always
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+    depends_on:
+      - kafka

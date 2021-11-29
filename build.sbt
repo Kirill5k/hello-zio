@@ -53,7 +53,7 @@ lazy val consumer = project
   .settings(docker)
   .settings(
     name       := "hello-zio-consumer",
-    moduleName := "consumer",
+    moduleName := "hello-zio-consumer",
     libraryDependencies ++= Dependencies.consumer ++ Dependencies.test,
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
@@ -65,7 +65,7 @@ lazy val api = project
   .settings(docker)
   .settings(
     name       := "hello-zio-api",
-    moduleName := "api",
+    moduleName := "hello-zio-api",
     libraryDependencies ++= Dependencies.api ++ Dependencies.test,
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
