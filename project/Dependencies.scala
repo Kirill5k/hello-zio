@@ -52,30 +52,26 @@ object Dependencies {
     val mockito   = "org.scalatestplus" %% "mockito-3-4" % Versions.mockito   % Test
   }
 
-  lazy val api =
-    Seq(
-      Libraries.pureconfig,
-      Libraries.logback,
-      Libraries.zio,
-      Libraries.zioStreams,
-      Libraries.zioKafka,
-      Libraries.scalaTest,
-      Libraries.mockito
-    ) ++
-      Libraries.circe.all ++
-      Libraries.tapir.all
+  lazy val api = Seq(
+    Libraries.pureconfig,
+    Libraries.logback
+  ) ++
+    Libraries.tapir.all
 
-  lazy val consumer =
-    Seq(
-      Libraries.pureconfig,
-      Libraries.logback,
-      Libraries.zio,
-      Libraries.zio,
-      Libraries.zioStreams,
-      Libraries.zioKafka,
-      Libraries.scalaTest,
-      Libraries.mockito
-    ) ++
-      Libraries.circe.all
+  lazy val consumer = Seq(
+    Libraries.pureconfig,
+    Libraries.logback
+  )
 
+  lazy val domain = Seq(
+    Libraries.zio,
+    Libraries.zioStreams,
+    Libraries.zioKafka
+  ) ++
+    Libraries.circe.all
+
+  lazy val test = Seq(
+    Libraries.scalaTest,
+    Libraries.mockito
+  )
 }

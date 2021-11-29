@@ -42,7 +42,8 @@ lazy val domain = project
   .settings(noPublish)
   .settings(
     name       := "hello-zio-domain",
-    moduleName := "domain"
+    moduleName := "domain",
+    libraryDependencies ++= Dependencies.domain
   )
 
 lazy val consumer = project
@@ -53,7 +54,7 @@ lazy val consumer = project
   .settings(
     name       := "hello-zio-consumer",
     moduleName := "consumer",
-    libraryDependencies ++= Dependencies.consumer,
+    libraryDependencies ++= Dependencies.consumer ++ Dependencies.test,
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
 
@@ -65,6 +66,6 @@ lazy val api = project
   .settings(
     name       := "hello-zio-api",
     moduleName := "api",
-    libraryDependencies ++= Dependencies.api,
+    libraryDependencies ++= Dependencies.api ++ Dependencies.test,
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
