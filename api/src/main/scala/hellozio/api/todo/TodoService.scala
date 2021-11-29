@@ -1,7 +1,7 @@
 package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
-import hellozio.domain.todo.{CreateTodo, Todo}
+import hellozio.domain.todo.{CreateTodo, Todo, TodoUpdate}
 import zio.Function2ToLayerSyntax
 import zio.Has
 import zio.IO
@@ -17,11 +17,14 @@ trait TodoService {
 }
 
 final private case class TodoServiceLive(repository: TodoRepository, publisher: TodoPublisher) extends TodoService {
-  override def create(todo: CreateTodo): IO[AppError, Todo.Id] = repository.create(todo).map(_.id)
-  override def getAll: IO[AppError, List[Todo]]                = repository.getAll
-  override def get(id: Todo.Id): IO[AppError, Todo]            = repository.get(id)
-  override def delete(id: Todo.Id): IO[AppError, Unit]         = repository.delete(id)
-  override def update(todo: Todo): IO[AppError, Unit]          = repository.update(todo)
+  override def getAll: IO[AppError, List[Todo]]     = repository.getAll
+  override def get(id: Todo.Id): IO[AppError, Todo] = repository.get(id)
+  override def create(todo: CreateTodo): IO[AppError, Todo.Id] =
+    repository.create(todo).tap(todo => publisher.send(TodoUpdate.Created(todo.id, todo))).map(_.id)
+  override def delete(id: Todo.Id): IO[AppError, Unit] =
+    repository.delete(id).tap(_ => publisher.send(TodoUpdate.Deleted(id)))
+  override def update(todo: Todo): IO[AppError, Unit] =
+    repository.update(todo).tap(_ => publisher.send(TodoUpdate.Updated(todo.id, todo)))
 }
 
 object TodoService {

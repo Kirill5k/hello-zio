@@ -1,5 +1,6 @@
 package hellozio.api.todo
 
+import hellozio.domain.todo.TodoUpdate
 import org.mockito.Mockito.when
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
@@ -17,6 +18,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
     "delete todo" in {
       val (repo, pub) = mocks
       when(repo.delete(Todos.id)).thenReturn(ZIO.unit)
+      when(pub.send(TodoUpdate.Deleted(Todos.id))).thenReturn(ZIO.unit)
 
       Runtime.default
         .unsafeRunToFuture(TodoService.delete(Todos.id).provideLayer(mockLayer(repo, pub)))
@@ -26,6 +28,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
     "update todo" in {
       val (repo, pub) = mocks
       when(repo.update(Todos.todo)).thenReturn(ZIO.unit)
+      when(pub.send(TodoUpdate.Updated(Todos.id, Todos.todo))).thenReturn(ZIO.unit)
 
       Runtime.default
         .unsafeRunToFuture(TodoService.update(Todos.todo).provideLayer(mockLayer(repo, pub)))
@@ -53,6 +56,7 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
     "create new todo" in {
       val (repo, pub) = mocks
       when(repo.create(Todos.create)).thenReturn(ZIO.succeed(Todos.todo))
+      when(pub.send(TodoUpdate.Created(Todos.id, Todos.todo))).thenReturn(ZIO.unit)
 
       Runtime.default
         .unsafeRunToFuture(TodoService.create(Todos.create).provideLayer(mockLayer(repo, pub)))
