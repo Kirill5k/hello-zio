@@ -23,13 +23,12 @@ final private case class TodoPublisherLive(
     topic: String
 ) extends TodoPublisher {
 
+  private val keySerde   = Serde.todoId
+  private val valueSerde = Serde.json[TodoUpdate]
+
   override def send(update: TodoUpdate): IO[AppError, Unit] =
     producer
-      .produce(
-        new ProducerRecord[Todo.Id, TodoUpdate](topic, update.id, update),
-        Serde.todoId,
-        Serde.json[TodoUpdate]
-      )
+      .produceAsync(new ProducerRecord[Todo.Id, TodoUpdate](topic, update.id, update), keySerde, valueSerde)
       .mapError(e => AppError.KafkaError(e.getMessage))
       .unit
 }
