@@ -48,4 +48,5 @@ object TodoPublisher {
       .orDie
       .toLayer
 
+  def send(update: TodoUpdate): ZIO[Has[TodoPublisher], AppError, Unit] = ZIO.serviceWith[TodoPublisher](_.send(update))
 }

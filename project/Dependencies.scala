@@ -10,6 +10,7 @@ object Dependencies {
     val tapir      = "0.19.0"
     val zio        = "1.0.12"
     val zioKafka   = "0.17.1"
+    val kafka      = "2.8.1"
 
     val scalaTest = "3.2.10"
     val mockito   = "3.2.10.0"
@@ -48,8 +49,9 @@ object Dependencies {
     val zioStreams = "dev.zio" %% "zio-streams" % Versions.zio
     val zioKafka   = "dev.zio" %% "zio-kafka"   % Versions.zioKafka
 
-    val scalaTest = "org.scalatest"     %% "scalatest"   % Versions.scalaTest % Test
-    val mockito   = "org.scalatestplus" %% "mockito-3-4" % Versions.mockito   % Test
+    val scalaTest     = "org.scalatest"           %% "scalatest"      % Versions.scalaTest % Test
+    val mockito       = "org.scalatestplus"       %% "mockito-3-4"    % Versions.mockito   % Test
+    val embeddedkafka = "io.github.embeddedkafka" %% "embedded-kafka" % Versions.kafka     % Test
   }
 
   lazy val api = Seq(
@@ -72,6 +74,7 @@ object Dependencies {
 
   lazy val test = Seq(
     Libraries.scalaTest,
-    Libraries.mockito
+    Libraries.mockito,
+    Libraries.embeddedkafka
   )
 }
