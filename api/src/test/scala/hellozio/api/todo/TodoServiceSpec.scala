@@ -1,6 +1,6 @@
 package hellozio.api.todo
 
-import hellozio.domain.todo.TodoUpdate
+import hellozio.domain.todo.{TodoUpdate, Todos}
 import org.mockito.Mockito.when
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec

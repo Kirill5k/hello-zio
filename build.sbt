@@ -48,7 +48,7 @@ lazy val domain = project
 
 lazy val consumer = project
   .in(file("consumer"))
-  .dependsOn(domain)
+  .dependsOn(domain % "compile->compile;test->test")
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
   .settings(docker)
   .settings(
@@ -60,7 +60,7 @@ lazy val consumer = project
 
 lazy val api = project
   .in(file("api"))
-  .dependsOn(domain)
+  .dependsOn(domain % "compile->compile;test->test")
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
   .settings(docker)
   .settings(

@@ -3,7 +3,7 @@ package hellozio.api.todo
 import io.circe.parser._
 import io.circe.generic.auto._
 import hellozio.api.common.config.{AppConfig, KafkaConfig, ServerConfig}
-import hellozio.domain.todo.TodoUpdate
+import hellozio.domain.todo.{TodoUpdate, Todos}
 import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec

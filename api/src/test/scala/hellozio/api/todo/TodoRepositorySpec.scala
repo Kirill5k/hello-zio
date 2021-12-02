@@ -1,7 +1,7 @@
 package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
-import hellozio.domain.todo.Todo
+import hellozio.domain.todo.{Todo, Todos}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 import zio.Runtime
