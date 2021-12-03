@@ -31,7 +31,7 @@ object config {
     lazy val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
       blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
         .flatMap { result =>
-          ZIO.fromEither(result).mapError(e => AppError.ConfigError(e.head.description))
+          ZIO.fromEither(result).mapError(e => AppError.Config(e.head.description))
         }
         .orDie
         .toLayer

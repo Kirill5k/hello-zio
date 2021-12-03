@@ -29,7 +29,7 @@ final private case class TodoPublisherLive(
   override def send(update: TodoUpdate): IO[AppError, Unit] =
     producer
       .produceAsync(new ProducerRecord[Todo.Id, TodoUpdate](topic, update.id, update), keySerde, valueSerde)
-      .mapError(e => AppError.KafkaError(e.getMessage))
+      .mapError(e => AppError.Kafka(e.getMessage))
       .unit
 }
 

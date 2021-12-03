@@ -24,7 +24,7 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
     .effect(UUID.randomUUID().toString)
     .map(id => Todo(Todo.Id(id), todo.task, todo.createdAt))
     .tap(todo => storage.update(_ + (todo.id -> todo)))
-    .mapError(e => AppError.DbError(e.getMessage))
+    .mapError(e => AppError.Db(e.getMessage))
 
   override def getAll: IO[AppError, List[Todo]] = storage.get.map(_.values.toList)
 
