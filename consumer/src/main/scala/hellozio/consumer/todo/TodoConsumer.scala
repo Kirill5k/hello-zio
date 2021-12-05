@@ -50,4 +50,6 @@ object TodoConsumer {
     }
     .orDie
     .toLayer
+
+  def updates: ZStream[Has[TodoConsumer] with Clock, AppError, TodoUpdate] = ZStream.service[TodoConsumer].flatMap(_.updates)
 }
