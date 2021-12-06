@@ -17,7 +17,6 @@ object config {
   final case class AppConfig(kafka: KafkaConfig)
 
   object AppConfig {
-
     lazy val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
       blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
         .flatMap { result =>
@@ -25,6 +24,5 @@ object config {
         }
         .orDie
         .toLayer
-
   }
 }

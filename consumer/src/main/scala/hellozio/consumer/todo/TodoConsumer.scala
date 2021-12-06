@@ -24,22 +24,21 @@ final private case class TodoConsumerLive(
     ZStream
       .fromEffect(Queue.bounded[TodoUpdate](1024))
       .flatMap { queue =>
-        val events = consumer
-          .subscribeAnd(Subscription.topics(topic))
-          .plainStream(Serde.todoId, Serde.json[TodoUpdate])
-          .mapM(r => queue.offer(r.value).as(r.offset))
-          .aggregateAsync(Consumer.offsetBatches)
-          .mapM(_.commit)
-          .mapError(e => AppError.Kafka(e.getMessage))
-
         ZStream
           .fromQueue(queue)
-          .drainFork(events)
+          .drainFork {
+            consumer
+              .subscribeAnd(Subscription.topics(topic))
+              .plainStream(Serde.todoId, Serde.json[TodoUpdate])
+              .mapM(r => queue.offer(r.value).as(r.offset))
+              .aggregateAsync(Consumer.offsetBatches)
+              .mapM(_.commit)
+              .mapError(e => AppError.Kafka(e.getMessage))
+          }
       }
 }
 
 object TodoConsumer {
-
   lazy val live: URLayer[Has[AppConfig] with Blocking with Clock, Has[TodoConsumer]] = ZIO
     .access[Has[AppConfig]](_.get.kafka)
     .toManaged_
@@ -51,5 +50,5 @@ object TodoConsumer {
     .orDie
     .toLayer
 
-  def updates: ZStream[Has[TodoConsumer] with Clock, AppError, TodoUpdate] = ZStream.service[TodoConsumer].flatMap(_.updates)
+  def updates: ZStream[Has[TodoConsumer] with Clock, AppError, TodoUpdate] = ZStream.accessStream(_.get[TodoConsumer].updates)
 }
