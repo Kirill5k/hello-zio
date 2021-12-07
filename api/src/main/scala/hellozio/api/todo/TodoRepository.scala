@@ -4,11 +4,7 @@ import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{CreateTodo, Todo}
 
 import java.util.UUID
-import zio.Has
-import zio.IO
-import zio.Ref
-import zio.ULayer
-import zio.ZIO
+import zio.{Accessible, Has, IO, Ref, ULayer, ZIO}
 
 trait TodoRepository {
   def create(todo: CreateTodo): IO[AppError, Todo]
@@ -45,13 +41,7 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
 
 }
 
-object TodoRepository {
+object TodoRepository extends Accessible[TodoRepository] {
 
   lazy val inmemory: ULayer[Has[TodoRepository]] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
-
-  def create(todo: CreateTodo): ZIO[Has[TodoRepository], AppError, Todo] = ZIO.serviceWith[TodoRepository](_.create(todo))
-  def getAll: ZIO[Has[TodoRepository], AppError, List[Todo]]             = ZIO.serviceWith[TodoRepository](_.getAll)
-  def get(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Todo]         = ZIO.serviceWith[TodoRepository](_.get(id))
-  def delete(id: Todo.Id): ZIO[Has[TodoRepository], AppError, Unit]      = ZIO.serviceWith[TodoRepository](_.delete(id))
-  def update(todo: Todo): ZIO[Has[TodoRepository], AppError, Unit]       = ZIO.serviceWith[TodoRepository](_.update(todo))
 }

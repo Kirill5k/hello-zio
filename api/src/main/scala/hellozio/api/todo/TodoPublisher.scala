@@ -6,10 +6,7 @@ import hellozio.domain.todo.{Todo, TodoUpdate}
 import hellozio.domain.common.kafka.Serde
 import io.circe.generic.auto._
 import org.apache.kafka.clients.producer.ProducerRecord
-import zio.Has
-import zio.IO
-import zio.URLayer
-import zio.ZIO
+import zio.{Accessible, Has, IO, URLayer, ZIO}
 import zio.blocking.Blocking
 import zio.kafka.producer.Producer
 import zio.kafka.producer.ProducerSettings
@@ -33,7 +30,7 @@ final private case class TodoPublisherLive(
       .unit
 }
 
-object TodoPublisher {
+object TodoPublisher extends Accessible[TodoPublisher] {
 
   lazy val live: URLayer[Has[AppConfig] with Blocking, Has[TodoPublisher]] =
     ZIO
@@ -46,6 +43,4 @@ object TodoPublisher {
       }
       .orDie
       .toLayer
-
-  def send(update: TodoUpdate): ZIO[Has[TodoPublisher], AppError, Unit] = ZIO.serviceWith[TodoPublisher](_.send(update))
 }

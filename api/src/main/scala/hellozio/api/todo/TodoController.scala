@@ -135,7 +135,6 @@ object TodoController {
 
   lazy val layer: URLayer[Has[TodoService] with Clock, Has[TodoController]] = (TodoControllerLive(_, _)).toLayer
 
-  def routes: URIO[Has[TodoController], HttpRoutes[RIO[Clock with Blocking, *]]] = ZIO
-    .access[Has[TodoController]](_.get.routes)
+  def routes: URIO[Has[TodoController], HttpRoutes[RIO[Clock with Blocking, *]]] = ZIO.access[Has[TodoController]](_.get.routes)
 
 }

@@ -18,7 +18,7 @@ import scala.concurrent.duration._
 class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
 
   val topic     = "todo-updates"
-  val kafkaPort = 29091
+  val kafkaPort = 29095
   val appConfig = AppConfig(KafkaConfig(s"localhost:$kafkaPort", "todo-consumer", topic))
 
   val layer = (ZLayer.succeed(appConfig) ++ Blocking.live ++ Clock.live) >>> TodoConsumer.live

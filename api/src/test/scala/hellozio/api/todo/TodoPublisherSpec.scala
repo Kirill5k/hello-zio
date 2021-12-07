@@ -25,7 +25,7 @@ class TodoPublisherSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
       implicit val config = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
       withRunningKafka {
         val update = TodoUpdate.Created(Todos.id, Todos.todo)
-        Runtime.default.unsafeRunSync(TodoPublisher.send(update).provideLayer(layer))
+        Runtime.default.unsafeRunSync(TodoPublisher(_.send(update)).provideLayer(layer))
 
         val msg = consumeFirstStringMessageFrom(topic)
         decode[TodoUpdate](msg) mustBe Right(update)
