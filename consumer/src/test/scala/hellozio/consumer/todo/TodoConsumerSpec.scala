@@ -11,7 +11,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import zio.blocking.Blocking
 import zio.clock.Clock
 import zio.duration.Duration
-import zio.{Runtime, ZLayer}
+import zio.{Runtime, ZIO, ZLayer}
 
 import scala.concurrent.duration._
 
@@ -30,14 +30,17 @@ class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
 
     "consume todo updates" in {
       implicit val config = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
-      val json = TodoUpdate.Created(Todos.id, Todos.todo).asJson.noSpaces
       withRunningKafka {
-        publishToKafka(topic, Todos.id.value, json)
+        val todo = TodoUpdate.Created(Todos.id, Todos.todo)
+        val result = for {
+          fib <- TodoConsumer.updates.timeout(Duration.fromScala(10.seconds)).runCollect.map(_.toList).fork
+          _   <- ZIO.sleep(Duration.fromScala(2.seconds))
+          _   <- ZIO.effect(publishToKafka(topic, Todos.id.value, todo.asJson.noSpaces))
+          res <- fib.join
+        } yield res
 
-        val updatesStream = TodoConsumer.updates.timeout(Duration.fromScala(10.seconds))
-        val update = Runtime.default.unsafeRunSync(updatesStream.runHead.provideLayer(layer ++ Clock.live))
-
-        update mustBe Some(TodoUpdate.Created(Todos.id, Todos.todo))
+        val update = Runtime.default.unsafeRunSync(result.provideLayer(layer ++ Clock.live))
+        update mustBe List(todo)
       }
     }
   }
