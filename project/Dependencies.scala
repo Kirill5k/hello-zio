@@ -4,13 +4,12 @@ object Dependencies {
 
   private object Versions {
     val circe      = "0.14.1"
-    val logback    = "1.2.7"
-    val pureconfig = "0.17.0"
-    val sttp       = "3.3.16"
-    val tapir      = "0.19.0"
-    val zio        = "1.0.12"
-    val zioKafka   = "0.17.1"
-    val kafka      = "2.8.1"
+    val logback    = "1.2.10"
+    val pureconfig = "0.17.1"
+    val tapir      = "0.20.0-M9"
+    val zio        = "2.0.0-RC2"
+    val zioKafka   = "0.17.4"
+    val kafka      = "3.1.0"
 
     val scalaTest = "3.2.10"
     val mockito   = "3.2.10.0"
@@ -35,14 +34,6 @@ object Dependencies {
       val parser  = "io.circe" %% "circe-parser"         % Versions.circe
 
       val all = Seq(core, generic, parser, extras)
-    }
-
-    object sttp {
-      val core    = "com.softwaremill.sttp.client3" %% "core"                          % Versions.sttp
-      val backend = "com.softwaremill.sttp.client3" %% "async-http-client-backend-zio" % Versions.sttp
-      val circe   = "com.softwaremill.sttp.client3" %% "circe"                         % Versions.sttp
-
-      val all = Seq(core, backend, circe)
     }
 
     val zio        = "dev.zio" %% "zio"         % Versions.zio

@@ -11,7 +11,7 @@ object kafka {
     val todoId: ZSerde[Any, Todo.Id] = ZSerde.string.inmap(Todo.Id.apply)(_.value)
 
     def json[A](implicit enc: Encoder[A], dec: Decoder[A]): ZSerde[Any, A] =
-      ZSerde.string.inmapM(j => ZIO.fromEither(dec.decodeJson(Json.fromString(j))))(v => ZIO.effect(enc(v).noSpaces))
+      ZSerde.string.inmapM(j => ZIO.fromEither(dec.decodeJson(Json.fromString(j))))(v => ZIO.attempt(enc(v).noSpaces))
   }
 
 }
