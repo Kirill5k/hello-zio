@@ -1,19 +1,19 @@
 import com.typesafe.sbt.packager.docker._
 
-ThisBuild / scalaVersion                        := "2.13.7"
+ThisBuild / scalaVersion                        := "2.13.8"
 ThisBuild / version                             := scala.sys.process.Process("git rev-parse HEAD").!!.trim.slice(0, 7)
 ThisBuild / organization                        := "io.github.kirill5k"
 ThisBuild / githubWorkflowPublishTargetBranches := Nil
 ThisBuild / githubWorkflowJavaVersions          := Seq("amazon-corretto@1.17")
 
-lazy val noPublish = Seq(
+val noPublish = Seq(
   publish         := {},
   publishLocal    := {},
   publishArtifact := false,
   publish / skip  := true
 )
 
-lazy val docker = Seq(
+val docker = Seq(
   packageName        := moduleName.value,
   version            := version.value,
   maintainer         := "immotional@aol.com",
@@ -29,15 +29,7 @@ lazy val docker = Seq(
   }
 )
 
-lazy val root = project
-  .in(file("."))
-  .settings(noPublish)
-  .settings(
-    name := "hello-zio"
-  )
-  .aggregate(consumer, api, domain)
-
-lazy val domain = project
+val domain = project
   .in(file("domain"))
   .settings(noPublish)
   .settings(
@@ -46,7 +38,7 @@ lazy val domain = project
     libraryDependencies ++= Dependencies.domain
   )
 
-lazy val consumer = project
+val consumer = project
   .in(file("consumer"))
   .dependsOn(domain % "compile->compile;test->test")
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
@@ -58,7 +50,7 @@ lazy val consumer = project
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
 
-lazy val api = project
+val api = project
   .in(file("api"))
   .dependsOn(domain % "compile->compile;test->test")
   .enablePlugins(JavaAppPackaging, JavaAgent, DockerPlugin)
@@ -69,3 +61,11 @@ lazy val api = project
     libraryDependencies ++= Dependencies.api ++ Dependencies.test,
     addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
+
+val root = project
+  .in(file("."))
+  .settings(noPublish)
+  .settings(
+    name := "hello-zio"
+  )
+  .aggregate(consumer, api, domain)
