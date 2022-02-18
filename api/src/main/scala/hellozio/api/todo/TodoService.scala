@@ -2,7 +2,7 @@ package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{CreateTodo, Todo, TodoUpdate}
-import zio.{Accessible, Function2ToLayerSyntax, Has, IO, URLayer}
+import zio._
 
 trait TodoService {
   def create(todo: CreateTodo): IO[AppError, Todo.Id]
@@ -24,5 +24,5 @@ final private case class TodoServiceLive(repository: TodoRepository, publisher: 
 }
 
 object TodoService extends Accessible[TodoService] {
-  lazy val layer: URLayer[Has[TodoRepository] with Has[TodoPublisher], Has[TodoService]] = (TodoServiceLive(_, _)).toLayer
+  lazy val layer: URLayer[TodoRepository with TodoPublisher, TodoService] = (TodoServiceLive(_, _)).toLayer
 }

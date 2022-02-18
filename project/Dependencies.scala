@@ -10,6 +10,7 @@ object Dependencies {
     val zio        = "2.0.0-RC2"
     val zioKafka   = "0.17.4"
     val kafka      = "3.1.0"
+    val http4s     = "0.23.10"
 
     val scalaTest = "3.2.10"
     val mockito   = "3.2.10.0"
@@ -18,6 +19,17 @@ object Dependencies {
   private object Libraries {
     val pureconfig = "com.github.pureconfig" %% "pureconfig"      % Versions.pureconfig
     val logback    = "ch.qos.logback"         % "logback-classic" % Versions.logback
+
+    object http4s {
+      val core        = "org.http4s" %% "http4s-core"         % Versions.http4s
+      val dsl         = "org.http4s" %% "http4s-dsl"          % Versions.http4s
+      val server      = "org.http4s" %% "http4s-server"       % Versions.http4s
+      val blazeClient = "org.http4s" %% "http4s-blaze-client" % Versions.http4s
+      val blazeServer = "org.http4s" %% "http4s-blaze-server" % Versions.http4s
+      val circe       = "org.http4s" %% "http4s-circe"        % Versions.http4s
+
+      val all = Seq(core, dsl, server, blazeServer, circe)
+    }
 
     object tapir {
       val core      = "com.softwaremill.sttp.tapir" %% "tapir-core"              % Versions.tapir
@@ -47,7 +59,8 @@ object Dependencies {
 
   lazy val api = Seq(
     Libraries.pureconfig,
-    Libraries.logback
+    Libraries.logback,
+    Libraries.http4s.blazeServer
   ) ++
     Libraries.tapir.all
 

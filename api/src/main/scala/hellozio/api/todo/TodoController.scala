@@ -15,19 +15,13 @@ import sttp.tapir.generic.SchemaDerivation
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.http4s.ztapir.ZHttp4sServerInterpreter
 import sttp.tapir.ztapir._
-import zio.Has
-import zio.RIO
-import zio.URIO
-import zio.URLayer
-import zio.ZIO
-import zio.blocking.Blocking
-import zio.clock.Clock
+import zio._
 
 trait TodoController {
-  def routes: HttpRoutes[RIO[Clock with Blocking, *]]
+  def routes: HttpRoutes[RIO[Clock, *]]
 }
 
-final private case class TodoControllerLive(service: TodoService, clock: Clock.Service) extends TodoController with SchemaDerivation {
+final private case class TodoControllerLive(service: TodoService, clock: Clock) extends TodoController with SchemaDerivation {
   implicit val todoIdEncoder: Encoder[Todo.Id]     = deriveUnwrappedEncoder
   implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
 
@@ -66,7 +60,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
     .errorOut(error)
     .out(statusCode(StatusCode.Created).and(jsonBody[CreateTodoResponse]))
     .zServerLogic { req =>
-      clock.currentDateTime.map(_.toInstant).orDie.flatMap { now =>
+      clock.currentDateTime.map(_.toInstant).flatMap { now =>
         service
           .create(CreateTodo(Todo.Task(req.task), now))
           .mapError(ErrorResponse.from)
@@ -95,7 +89,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock.S
         .flatMap(todo => service.update(todo).mapError(ErrorResponse.from))
     }
 
-  override def routes: HttpRoutes[RIO[Clock with Blocking, *]] =
+  override def routes: HttpRoutes[RIO[Clock, *]] =
     ZHttp4sServerInterpreter()
       .from(
         List(
@@ -133,8 +127,8 @@ object TodoController {
   final case class CreateTodoRequest(task: String)
   final case class CreateTodoResponse(id: Todo.Id)
 
-  lazy val layer: URLayer[Has[TodoService] with Clock, Has[TodoController]] = (TodoControllerLive(_, _)).toLayer
+  lazy val layer: URLayer[TodoService with Clock, TodoController] = (TodoControllerLive(_, _)).toLayer
 
-  def routes: URIO[Has[TodoController], HttpRoutes[RIO[Clock with Blocking, *]]] = ZIO.access[Has[TodoController]](_.get.routes)
+  def routes: URIO[TodoController, HttpRoutes[RIO[Clock, *]]] = ZIO.serviceWith[TodoController](_.routes)
 
 }

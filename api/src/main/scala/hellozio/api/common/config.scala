@@ -3,11 +3,7 @@ package hellozio.api.common
 import hellozio.domain.common.errors.AppError
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
-import zio.Has
-import zio.ZIO
-import zio.ZLayer
-import zio.blocking.Blocking
-import zio.blocking.blocking
+import zio._
 
 object config {
 
@@ -27,15 +23,11 @@ object config {
   )
 
   object AppConfig {
-
-    lazy val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
-      blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
-        .flatMap { result =>
-          ZIO.fromEither(result).mapError(e => AppError.Config(e.head.description))
-        }
+    lazy val layer: Layer[AppError, AppConfig] =
+      ZIO.blocking(ZIO(ConfigSource.default.load[AppConfig]))
+        .flatMap(result => ZIO.fromEither(result).mapError(e => AppError.Config(e.head.description)))
         .orDie
         .toLayer
-
   }
 
 }
