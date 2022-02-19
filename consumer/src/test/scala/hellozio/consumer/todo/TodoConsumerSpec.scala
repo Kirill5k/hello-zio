@@ -16,7 +16,7 @@ class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
   val kafkaPort = 29095
   val appConfig = AppConfig(KafkaConfig(s"localhost:$kafkaPort", "todo-consumer", topic))
 
-  val layer = (ZLayer.succeed(appConfig) ++ Clock.live) >>> TodoConsumer.layer
+  lazy val layer = (ZLayer.succeed(appConfig) ++ Clock.live) >>> TodoConsumer.layer
 
   implicit val serializer: Serializer[String]     = new StringSerializer()
   implicit val deserializer: Deserializer[String] = new StringDeserializer()
@@ -33,6 +33,7 @@ class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
           _   <- ZIO.attempt(publishToKafka(topic, Todos.id.value, todo.asJson.noSpaces))
           _   <- ZIO.sleep(2.seconds)
           res <- fib.join
+          _ <- Console.printLine(("-" * 20) + " ENDING TEST! " + ("-" * 20)).provideLayer(Console.live)
         } yield res
 
         val update = Runtime.default.unsafeRunSync(result.provideLayer(layer ++ Clock.live))
