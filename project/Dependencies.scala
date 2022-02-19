@@ -3,14 +3,16 @@ import sbt._
 object Dependencies {
 
   private object Versions {
-    val circe      = "0.14.1"
-    val logback    = "1.2.10"
-    val pureconfig = "0.17.1"
-    val tapir      = "0.20.0-M9"
-    val zio        = "2.0.0-RC2"
-    val zioKafka   = "0.17.4"
-    val kafka      = "3.1.0"
-    val http4s     = "0.23.10"
+    val circe          = "0.14.1"
+    val logback        = "1.2.10"
+    val pureconfig     = "0.17.1"
+    val tapir          = "0.20.0-M9"
+    val zio            = "2.0.0-RC2"
+    val zioInteropCats = "3.3.0-RC2"
+    val zioKafka       = "0.17.4"
+    val fs2Kafka       = "3.0.0-M4"
+    val kafka          = "3.1.0"
+    val http4s         = "0.23.10"
 
     val scalaTest = "3.2.10"
     val mockito   = "3.2.10.0"
@@ -19,6 +21,7 @@ object Dependencies {
   private object Libraries {
     val pureconfig = "com.github.pureconfig" %% "pureconfig"      % Versions.pureconfig
     val logback    = "ch.qos.logback"         % "logback-classic" % Versions.logback
+    val fs2Kafka   = "com.github.fd4s"       %% "fs2-kafka"       % Versions.fs2Kafka
 
     object http4s {
       val core        = "org.http4s" %% "http4s-core"         % Versions.http4s
@@ -48,9 +51,10 @@ object Dependencies {
       val all = Seq(core, generic, parser, extras)
     }
 
-    val zio        = "dev.zio" %% "zio"         % Versions.zio
-    val zioStreams = "dev.zio" %% "zio-streams" % Versions.zio
-    val zioKafka   = "dev.zio" %% "zio-kafka"   % Versions.zioKafka
+    val zio            = "dev.zio" %% "zio"              % Versions.zio
+    val zioStreams     = "dev.zio" %% "zio-streams"      % Versions.zio
+    val zioInteropCats = "dev.zio" %% "zio-interop-cats" % Versions.zioInteropCats
+    val zioKafka       = "dev.zio" %% "zio-kafka"        % Versions.zioKafka
 
     val scalaTest     = "org.scalatest"           %% "scalatest"      % Versions.scalaTest % Test
     val mockito       = "org.scalatestplus"       %% "mockito-3-4"    % Versions.mockito   % Test
@@ -72,7 +76,9 @@ object Dependencies {
   lazy val domain = Seq(
     Libraries.zio,
     Libraries.zioStreams,
-    Libraries.zioKafka
+    Libraries.zioInteropCats,
+    Libraries.zioKafka,
+    Libraries.fs2Kafka
   ) ++
     Libraries.circe.all
 

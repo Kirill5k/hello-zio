@@ -35,7 +35,8 @@ val domain = project
   .settings(
     name       := "hello-zio-domain",
     moduleName := "domain",
-    libraryDependencies ++= Dependencies.domain
+    libraryDependencies ++= Dependencies.domain,
+    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
 
 val consumer = project
