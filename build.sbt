@@ -32,7 +32,6 @@ val docker = Seq(
 
 val domain = project
   .in(file("domain"))
-  .settings(noPublish)
   .settings(
     name       := "hello-zio-domain",
     moduleName := "domain",

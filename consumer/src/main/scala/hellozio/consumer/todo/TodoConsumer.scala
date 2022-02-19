@@ -26,8 +26,14 @@ final private case class TodoConsumerLive(
       .eval(consumer.subscribeTo(topic))
       .flatMap(_ => consumer.stream)
       .toZStream()
-      .mapZIO(c => c.offset.commit.as(c.record.value))
-      .mapError(e => AppError.Kafka(e.getMessage))
+      .mapZIO { c =>
+        Console.printLine(("-" * 20) + s" ${c.record.value} " + ("-" * 20)).provideLayer(Console.live) *>
+          c.offset.commit.as(c.record.value)
+      }
+      .mapError { e =>
+        println(("-" * 20) + s" ${e} " + ("-" * 20))
+        AppError.Kafka(e.getMessage)
+      }
       .provideLayer(Clock.live)
 }
 
