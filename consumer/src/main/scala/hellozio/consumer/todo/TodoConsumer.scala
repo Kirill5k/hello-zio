@@ -13,7 +13,7 @@ import zio.stream.interop.fs2z._
 import zio._
 
 trait TodoConsumer {
-  def updates: ZStream[Clock, AppError, TodoUpdate]
+  def updates: ZStream[Any, AppError, TodoUpdate]
 }
 
 final private case class TodoConsumerLive(
@@ -21,14 +21,14 @@ final private case class TodoConsumerLive(
     topic: String
 ) extends TodoConsumer {
 
-  override def updates: ZStream[Clock, AppError, TodoUpdate] = {
+  override def updates: ZStream[Any, AppError, TodoUpdate] =
     Stream
       .eval(consumer.subscribeTo(topic))
       .flatMap(_ => consumer.stream)
       .toZStream()
       .mapZIO(c => c.offset.commit.as(c.record.value))
       .mapError(e => AppError.Kafka(e.getMessage))
-  }
+      .provideLayer(Clock.live)
 }
 
 object TodoConsumer {
@@ -47,9 +47,8 @@ object TodoConsumer {
         .toManagedZIO
         .map(c => TodoConsumerLive(c, config.topic))
     }
-    .tapZIO(_ => Console.printLine(("-" * 20) + " TERMINATING! " + ("-" * 20)).provideLayer(Console.live))
     .orDie
     .toLayer
 
-  def updates: ZStream[TodoConsumer with Clock, AppError, TodoUpdate] = ZStream.serviceWithStream[TodoConsumer](_.updates)
+  def updates: ZStream[TodoConsumer, AppError, TodoUpdate] = ZStream.serviceWithStream[TodoConsumer](_.updates)
 }
