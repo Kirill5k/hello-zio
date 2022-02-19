@@ -17,7 +17,7 @@ trait TodoRepository {
 final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]) extends TodoRepository {
 
   override def create(todo: CreateTodo): IO[AppError, Todo] = ZIO
-    .effect(UUID.randomUUID().toString)
+    .attempt(UUID.randomUUID().toString)
     .map(id => Todo(Todo.Id(id), todo.task, todo.createdAt))
     .tap(todo => storage.update(_ + (todo.id -> todo)))
     .mapError(e => AppError.Db(e.getMessage))

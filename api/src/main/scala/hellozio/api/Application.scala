@@ -10,7 +10,7 @@ import zio.interop.catz._
 object Application extends ZIOAppDefault {
 
   val configLayer    = AppConfig.layer
-  val publisherLayer = configLayer >>> TodoPublisher.live
+  val publisherLayer = configLayer >>> TodoPublisher.layer
   val repoLayer      = TodoRepository.inmemory
   val serviceLayer   = (publisherLayer ++ repoLayer) >>> TodoService.layer
   val httpLayer      = (serviceLayer ++ Clock.live) >>> TodoController.layer

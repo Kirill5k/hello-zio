@@ -17,7 +17,7 @@ class TodoPublisherSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
   val kafkaPort = 29092
   val appConfig = AppConfig(ServerConfig("0.0.0.0", 8080), KafkaConfig(s"localhost:$kafkaPort", topic))
 
-  val layer = (ZLayer.succeed(appConfig) ++ Blocking.live) >>> TodoPublisher.live
+  val layer = (ZLayer.succeed(appConfig) ++ Blocking.live) >>> TodoPublisher.layer
 
   "A TodoPublisher" should {
 
