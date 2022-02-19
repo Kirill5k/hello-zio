@@ -1,9 +1,8 @@
 package hellozio.consumer
 
-import zio.{ExitCode, URIO}
-import zio.console._
+import zio._
 
-object Application extends zio.App {
-  override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] =
-    putStrLn("Hello, World!").orDie.exitCode
+object Application extends ZIOAppDefault {
+  override def run: URIO[zio.ZEnv, ExitCode] =
+    Console.printLine("Hello, World!").orDie.exitCode
 }

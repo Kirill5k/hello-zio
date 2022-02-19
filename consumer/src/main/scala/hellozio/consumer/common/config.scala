@@ -3,8 +3,7 @@ package hellozio.consumer.common
 import hellozio.domain.common.errors.AppError
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
-import zio.{Has, ZIO, ZLayer}
-import zio.blocking.{blocking, Blocking}
+import zio._
 
 object config {
 
@@ -17,8 +16,8 @@ object config {
   final case class AppConfig(kafka: KafkaConfig)
 
   object AppConfig {
-    lazy val layer: ZLayer[Blocking, AppError, Has[AppConfig]] =
-      blocking(ZIO.effect(ConfigSource.default.load[AppConfig]))
+    lazy val layer: Layer[AppError, AppConfig] =
+      ZIO.attemptBlocking(ConfigSource.default.load[AppConfig])
         .flatMap { result =>
           ZIO.fromEither(result).mapError(e => AppError.Config(e.head.description))
         }
