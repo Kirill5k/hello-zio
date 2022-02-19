@@ -1,54 +1,54 @@
 package hellozio.consumer.todo
 
+import fs2.Stream
+import fs2.kafka.{AutoOffsetReset, ConsumerSettings, KafkaConsumer}
 import hellozio.consumer.common.config.AppConfig
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.common.kafka.Serde
-import hellozio.domain.todo.TodoUpdate
+import hellozio.domain.todo.{Todo, TodoUpdate}
 import io.circe.generic.auto._
-import zio.blocking.Blocking
-import zio.clock.Clock
-import zio.kafka.consumer.{Consumer, ConsumerSettings, Subscription}
-import zio.{Has, Queue, URLayer, ZIO}
+import zio.interop.catz._
 import zio.stream.ZStream
+import zio.stream.interop.fs2z._
+import zio.{Clock, RIO, URLayer, ZIO}
 
 trait TodoConsumer {
   def updates: ZStream[Clock, AppError, TodoUpdate]
 }
 
 final private case class TodoConsumerLive(
-    consumer: Consumer,
+    consumer: KafkaConsumer[RIO[Clock, *], Todo.Id, TodoUpdate],
     topic: String
 ) extends TodoConsumer {
 
-  override def updates: ZStream[Clock, AppError, TodoUpdate] =
-    ZStream
-      .fromEffect(Queue.bounded[TodoUpdate](1024))
-      .flatMap { queue =>
-        ZStream
-          .fromQueue(queue)
-          .drainFork {
-            consumer
-              .subscribeAnd(Subscription.topics(topic))
-              .plainStream(Serde.todoId, Serde.json[TodoUpdate])
-              .mapM(r => queue.offer(r.value).as(r.offset))
-              .aggregateAsync(Consumer.offsetBatches)
-              .mapM(_.commit)
-              .mapError(e => AppError.Kafka(e.getMessage))
-          }
-      }
+  override def updates: ZStream[Clock, AppError, TodoUpdate] = {
+    Stream
+      .eval(consumer.subscribeTo(topic))
+      .flatMap(_ => consumer.stream)
+      .toZStream()
+      .mapZIO(c => c.offset.commit.as(c.record.value))
+      .mapError(e => AppError.Kafka(e.getMessage))
+  }
 }
 
 object TodoConsumer {
-  lazy val live: URLayer[Has[AppConfig] with Blocking with Clock, Has[TodoConsumer]] = ZIO
-    .access[Has[AppConfig]](_.get.kafka)
-    .toManaged_
-    .flatMap { kafka =>
-      Consumer
-        .make(ConsumerSettings(List(kafka.bootstrapServers)).withGroupId(kafka.groupId))
-        .map(c => TodoConsumerLive(c, kafka.topic))
+  lazy val live: URLayer[AppConfig with Clock, TodoConsumer] = ZIO
+    .serviceWith[AppConfig](_.kafka)
+    .toManaged
+    .flatMap { config =>
+      val settings = ConsumerSettings(
+        keyDeserializer = Serde.todoIdDeserializer,
+        valueDeserializer = Serde.jsonDeserializer[TodoUpdate]
+      ).withAutoOffsetReset(AutoOffsetReset.Latest)
+        .withBootstrapServers(config.bootstrapServers)
+        .withGroupId(config.groupId)
+      KafkaConsumer
+        .resource(settings)
+        .toManagedZIO
+        .map(c => TodoConsumerLive(c, config.topic))
     }
     .orDie
     .toLayer
 
-  def updates: ZStream[Has[TodoConsumer] with Clock, AppError, TodoUpdate] = ZStream.accessStream(_.get[TodoConsumer].updates)
+  def updates: ZStream[TodoConsumer with Clock, AppError, TodoUpdate] = ZStream.serviceWithStream[TodoConsumer](_.updates)
 }
