@@ -6,10 +6,12 @@ import io.circe.syntax._
 import io.circe.generic.auto._
 import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
+import org.scalatest.Ignore
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import zio._
 
+@Ignore
 class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
 
   val topic     = "todo-updates"
