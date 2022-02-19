@@ -5,11 +5,8 @@ import org.mockito.Mockito.when
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatestplus.mockito.MockitoSugar
-import zio.Has
 import zio.Runtime
-import zio.ULayer
-import zio.ZIO
-import zio.ZLayer
+import zio._
 
 class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
 
@@ -67,6 +64,6 @@ class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
   def mocks: (TodoRepository, TodoPublisher) =
     (mock[TodoRepository], mock[TodoPublisher])
 
-  def mockLayer(repo: TodoRepository, publisher: TodoPublisher): ULayer[Has[TodoService]] =
+  def mockLayer(repo: TodoRepository, publisher: TodoPublisher): ULayer[TodoService] =
     (ZLayer.succeed(repo) ++ ZLayer.succeed(publisher)) >>> TodoService.layer
 }
