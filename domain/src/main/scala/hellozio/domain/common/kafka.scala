@@ -2,20 +2,17 @@ package hellozio.domain.common
 
 import fs2.kafka.{Deserializer, Serializer}
 import hellozio.domain.todo.Todo
-import io.circe.{Decoder, Encoder, Json}
 import io.circe.jawn._
 import io.circe.syntax._
-import zio.{Clock, RIO, ZIO}
-import zio.kafka.serde.{Serde => ZSerde}
+import io.circe.{Decoder, Encoder}
 import zio.interop.catz._
+import zio.{Clock, RIO}
 
 import java.nio.charset.StandardCharsets
 
 object kafka {
 
   object Serde {
-    val todoId: ZSerde[Any, Todo.Id] = ZSerde.string.inmap(Todo.Id.apply)(_.value)
-
     implicit def todoIdSerializer: Serializer[RIO[Clock, *], Todo.Id] =
       Serializer.instance[RIO[Clock, *], Todo.Id] { case (_, _, id) => RIO.succeed(id.value.getBytes(StandardCharsets.UTF_8)) }
 
@@ -27,9 +24,6 @@ object kafka {
 
     implicit def jsonDeserializer[A: Decoder]: Deserializer[RIO[Clock, *], A] =
       Deserializer.instance[RIO[Clock, *], A] { case (_, _, a) => RIO.fromEither(decodeByteArray[A](a)) }
-
-    def json[A](implicit enc: Encoder[A], dec: Decoder[A]): ZSerde[Any, A] =
-      ZSerde.string.inmapM(j => ZIO.fromEither(dec.decodeJson(Json.fromString(j))))(v => ZIO(enc(v).noSpaces))
   }
 
 }

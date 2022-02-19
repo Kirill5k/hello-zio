@@ -7,7 +7,7 @@ import hellozio.domain.todo.{TodoUpdate, Todos}
 import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import zio.{Clock, Runtime, ZLayer}
+import zio.{Clock, Runtime, ZIO, ZLayer}
 
 class TodoPublisherSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
 
@@ -22,11 +22,16 @@ class TodoPublisherSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
     "publish todo updates to a topic" in {
       implicit val config = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
       withRunningKafka {
-        val update = TodoUpdate.Created(Todos.id, Todos.todo)
-        Runtime.default.unsafeRunSync(TodoPublisher(_.send(update)).provideLayer(layer))
+        val updates = List(
+          TodoUpdate.Created(Todos.id, Todos.todo),
+          TodoUpdate.Updated(Todos.id, Todos.todo),
+          TodoUpdate.Deleted(Todos.id)
+        )
 
-        val msg = consumeFirstStringMessageFrom(topic)
-        decode[TodoUpdate](msg) mustBe Right(update)
+        Runtime.default.unsafeRunSync(ZIO.foreach(updates)(u => TodoPublisher(_.send(u))).provideLayer(layer))
+
+        val msgs = consumeNumberStringMessagesFrom(topic, 3)
+        msgs.flatMap(decode[TodoUpdate](_).toOption) mustBe updates
       }
     }
   }

@@ -8,12 +8,7 @@ import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import zio.blocking.Blocking
-import zio.clock.Clock
-import zio.duration.Duration
-import zio.{Runtime, ZIO, ZLayer}
-
-import scala.concurrent.duration._
+import zio._
 
 class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
 
@@ -21,7 +16,7 @@ class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
   val kafkaPort = 29095
   val appConfig = AppConfig(KafkaConfig(s"localhost:$kafkaPort", "todo-consumer", topic))
 
-  val layer = (ZLayer.succeed(appConfig) ++ Blocking.live ++ Clock.live) >>> TodoConsumer.live
+  val layer = (ZLayer.succeed(appConfig) ++ Clock.live) >>> TodoConsumer.layer
 
   implicit val serializer: Serializer[String]     = new StringSerializer()
   implicit val deserializer: Deserializer[String] = new StringDeserializer()
@@ -33,9 +28,10 @@ class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
       withRunningKafka {
         val todo = TodoUpdate.Created(Todos.id, Todos.todo)
         val result = for {
-          fib <- TodoConsumer.updates.timeout(Duration.fromScala(10.seconds)).runCollect.map(_.toList).fork
-          _   <- ZIO.sleep(Duration.fromScala(2.seconds))
-          _   <- ZIO.effect(publishToKafka(topic, Todos.id.value, todo.asJson.noSpaces))
+          fib <- TodoConsumer.updates.timeout(10.seconds).runCollect.map(_.toList).fork
+          _   <- ZIO.sleep(2.seconds)
+          _   <- ZIO.attempt(publishToKafka(topic, Todos.id.value, todo.asJson.noSpaces))
+          _   <- ZIO.sleep(2.seconds)
           res <- fib.join
         } yield res
 

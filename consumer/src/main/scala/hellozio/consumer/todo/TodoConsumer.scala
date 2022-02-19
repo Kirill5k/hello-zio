@@ -10,7 +10,7 @@ import io.circe.generic.auto._
 import zio.interop.catz._
 import zio.stream.ZStream
 import zio.stream.interop.fs2z._
-import zio.{Clock, RIO, URLayer, ZIO}
+import zio._
 
 trait TodoConsumer {
   def updates: ZStream[Clock, AppError, TodoUpdate]
@@ -32,7 +32,7 @@ final private case class TodoConsumerLive(
 }
 
 object TodoConsumer {
-  lazy val live: URLayer[AppConfig with Clock, TodoConsumer] = ZIO
+  lazy val layer: URLayer[AppConfig with Clock, TodoConsumer] = ZIO
     .serviceWith[AppConfig](_.kafka)
     .toManaged
     .flatMap { config =>
@@ -47,6 +47,7 @@ object TodoConsumer {
         .toManagedZIO
         .map(c => TodoConsumerLive(c, config.topic))
     }
+    .tapZIO(_ => Console.printLine(("-" * 20) + " TERMINATING! " + ("-" * 20)).provideLayer(Console.live))
     .orDie
     .toLayer
 
