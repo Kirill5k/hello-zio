@@ -19,15 +19,15 @@ class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
   val kafkaPort = 29095
   val appConfig = AppConfig(KafkaConfig(s"localhost:$kafkaPort", "todo-consumer", topic))
 
-  val layer = (ZLayer.succeed(appConfig) ++ Clock.live)
+  val testLayer = ZLayer.succeed(appConfig) ++ Clock.live
 
   implicit val serializer: Serializer[String]     = new StringSerializer()
   implicit val deserializer: Deserializer[String] = new StringDeserializer()
+  implicit val config: EmbeddedKafkaConfig        = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
 
   "A TodoConsumer" should {
 
     "consume todo updates" in {
-      implicit val config = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
       withRunningKafka {
         val todo = TodoUpdate.Created(Todos.id, Todos.todo)
         val result = for {
@@ -38,7 +38,7 @@ class TodoConsumerSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
           res <- fib.join
         } yield res
 
-        val update = Runtime.default.unsafeRunSync(result.provideLayer(layer >+> TodoConsumer.layer))
+        val update = Runtime.default.unsafeRunSync(result.provideLayer(testLayer >+> TodoConsumer.layer))
         update mustBe List(todo)
       }
     }
