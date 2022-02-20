@@ -9,8 +9,7 @@ import zio.interop.catz._
 
 object Application extends ZIOAppDefault {
 
-  val publisherLayer = AppConfig.layer >>> TodoPublisher.layer
-  val serviceLayer   = (publisherLayer ++ TodoRepository.inmemory) >>> TodoService.layer
+  val serviceLayer   = (TodoPublisher.layer ++ TodoRepository.inmemory) >>> TodoService.layer
   val httpLayer      = (serviceLayer ++ Clock.live) >>> TodoController.layer
 
   override def run: URIO[zio.ZEnv, ExitCode] =
@@ -26,7 +25,7 @@ object Application extends ZIOAppDefault {
           .compile
           .drain
       }
-      .provideLayer(AppConfig.layer ++ httpLayer ++ Clock.live)
+      .provideLayer(AppConfig.layer >+> httpLayer ++ Clock.live)
       .exitCode
 
 
