@@ -14,7 +14,7 @@ services:
 
   kafka:
     container_name: kafka
-    image: wurstmeister/kafka:2.13-2.7.1
+    image: wurstmeister/kafka:2.13-2.8.1
     environment:
       # This sets up Kafka listening on two ports at once using two different hostnames
       # Port 9092 is for usage on the docker network and port 29092 is for connectivity from outside the docker network
@@ -40,6 +40,7 @@ services:
     restart: always
     depends_on:
       - zookeeper
+      - kafka
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
       SCHEMA_REGISTRY_HOST_NAME: schemaregistry
