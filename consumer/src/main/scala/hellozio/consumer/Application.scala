@@ -6,8 +6,7 @@ import zio._
 
 object Application extends ZIOAppDefault {
 
-  val configLayer    = AppConfig.layer
-  val consumerLayer = (configLayer ++ Clock.live) >>> TodoConsumer.layer
+  val consumerLayer = AppConfig.layer ++ Clock.live >>> TodoConsumer.layer
 
   override def run: URIO[zio.ZEnv, ExitCode] =
     TodoConsumer
