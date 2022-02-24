@@ -1,6 +1,12 @@
 package hellozio.api.todo
 
+import hellozio.domain.todo.Todos
+import org.mockito.Mockito.when
+import org.http4s._
+import org.http4s.implicits._
 import org.scalatestplus.mockito.MockitoSugar
+import zio.interop.catz._
+import zio._
 
 class TodoControllerSpec extends ControllerSpec with MockitoSugar {
 
@@ -8,7 +14,14 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
 
     "GET /api/todos" should {
       "return all todos" in {
-        pending
+        val svc = mock[TodoService]
+        when(svc.getAll).thenReturn(IO.succeed(List(Todos.todo)))
+
+        val req = Request[RIO[Clock, *]](uri = uri"/api/todos", method = Method.GET)
+        val res = routes(svc).flatMap(_.orNotFound.run(req))
+
+        val expectedRes = s"""[{"id":"${Todos.todo.id.value}", "":"task to do", "createdAt":"${Todos.todo.createdAt}"}]"""
+        verifyJsonResponse(res, Status.Ok, Some(expectedRes))
       }
     }
 
@@ -48,4 +61,8 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
       }
     }
   }
+
+  def routes(service: TodoService): UIO[HttpRoutes[RIO[Clock, *]]] =
+    TodoController.routes
+      .provideLayer(ZLayer.succeed(service) ++ Clock.live >>> TodoController.layer)
 }
