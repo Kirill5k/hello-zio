@@ -20,7 +20,7 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val req = Request[RIO[Clock, *]](uri = uri"/api/todos", method = Method.GET)
         val res = routes(svc).flatMap(_.orNotFound.run(req))
 
-        val expectedRes = s"""[{"id":"${Todos.todo.id.value}", "":"task to do", "createdAt":"${Todos.todo.createdAt}"}]"""
+        val expectedRes = s"""[{"id":"${Todos.todo.id.value}", "task":"task to do", "createdAt":"${Todos.todo.createdAt}"}]"""
         verifyJsonResponse(res, Status.Ok, Some(expectedRes))
       }
     }
