@@ -11,19 +11,24 @@ import zio._
 trait ControllerSpec extends AnyWordSpec with Matchers {
 
   def verifyJsonResponse(
-      actual: Task[Response[Task]],
+      response: Task[Response[Task]],
       expectedStatus: Status,
       expectedBody: Option[String] = None
-  ): Assertion = {
-    val actualResp = Runtime.default.unsafeRun(actual)
-
-    actualResp.status must be(expectedStatus)
-    expectedBody match {
-      case Some(expected) =>
-        val actual = Runtime.default.unsafeRun(actualResp.as[String])
-        parse(actual) mustBe parse(expected)
-      case None =>
-        Runtime.default.unsafeRun(actualResp.body.compile.toVector) mustBe empty
-    }
-  }
+  ): Assertion =
+    Runtime.default.unsafeRun(
+      response.flatMap { res =>
+        expectedBody match {
+          case Some(expectedJson) =>
+            res.as[String].map { receivedJson =>
+              res.status mustBe expectedStatus
+              parse(receivedJson) mustBe parse(expectedJson)
+            }
+          case None =>
+            res.body.compile.toVector.map { receivedJson =>
+              res.status mustBe expectedStatus
+              receivedJson mustBe empty
+            }
+        }
+      }
+    )
 }
