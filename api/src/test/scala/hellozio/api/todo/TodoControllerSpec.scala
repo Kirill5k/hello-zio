@@ -1,15 +1,20 @@
 package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
-import hellozio.domain.todo.Todos
-import org.mockito.Mockito.when
+import hellozio.domain.todo.{CreateTodo, Todo, Todos}
 import org.http4s._
 import org.http4s.implicits._
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import zio.interop.catz._
 import zio._
+import zio.interop.catz._
+
+import java.time.{Instant, OffsetDateTime, ZoneOffset}
 
 class TodoControllerSpec extends ControllerSpec with MockitoSugar {
+
+  val ts = Instant.parse("2022-02-22T22:02:22Z")
 
   "A TodoController" when {
 
@@ -52,7 +57,15 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
 
     "POST /api/todos" should {
       "create new todo" in {
-        pending
+        val svc = mock[TodoService]
+        when(svc.create(CreateTodo(Todo.Task("task todo"), ts))).thenReturn(IO.succeed(Todos.id))
+
+        val reqBody = """{"task":"task todo"}"""
+        val req = Request[RIO[Clock, *]](uri = uri"/api/todos", method = Method.POST).withEntity(reqBody)
+        val res = routes(svc).flatMap(_.orNotFound.run(req))
+
+        val expectedRes = s"""{"id":"${Todos.todo.id.value}"}"""
+        verifyJsonResponse(res, Status.Created, Some(expectedRes))
       }
     }
 
@@ -90,7 +103,11 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
     }
   }
 
-  def routes(service: TodoService): UIO[HttpRoutes[RIO[Clock, *]]] =
+  def routes(service: TodoService): UIO[HttpRoutes[RIO[Clock, *]]] = {
+    val clock = mock[Clock]
+    when(clock.currentDateTime(ArgumentMatchers.any[ZTraceElement]())).thenReturn(UIO.succeed(OffsetDateTime.ofInstant(ts, ZoneOffset.UTC)))
+
     TodoController.routes
-      .provideLayer(ZLayer.succeed(service) ++ Clock.live >>> TodoController.layer)
+      .provideLayer(ZLayer.succeed(service) ++ ZLayer.succeed(clock) >>> TodoController.layer)
+  }
 }
