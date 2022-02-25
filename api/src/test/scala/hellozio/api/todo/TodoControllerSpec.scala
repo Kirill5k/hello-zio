@@ -61,8 +61,8 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         when(svc.create(CreateTodo(Todo.Task("task todo"), ts))).thenReturn(IO.succeed(Todos.id))
 
         val reqBody = """{"task":"task todo"}"""
-        val req = Request[RIO[Clock, *]](uri = uri"/api/todos", method = Method.POST).withEntity(reqBody)
-        val res = routes(svc).flatMap(_.orNotFound.run(req))
+        val req     = Request[RIO[Clock, *]](uri = uri"/api/todos", method = Method.POST).withEntity(reqBody)
+        val res     = routes(svc).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""{"id":"${Todos.todo.id.value}"}"""
         verifyJsonResponse(res, Status.Created, Some(expectedRes))
@@ -71,10 +71,22 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
 
     "PUT /api/todos/:id" should {
       "update existing todo" in {
-        pending
+        val svc = mock[TodoService]
+        when(svc.update(Todo(Todos.id, Todo.Task("update to do"), ts))).thenReturn(IO.unit)
+
+        val url     = Uri.unsafeFromString(s"/api/todos/${Todos.id.value}")
+        val reqBody = s"""{"id":"${Todos.id.value}","task":"update to do","createdAt":"$ts"}"""
+        val req     = Request[RIO[Clock, *]](uri = url, method = Method.PUT).withEntity(reqBody)
+        val res     = routes(svc).flatMap(_.orNotFound.run(req))
+
+        verifyJsonResponse(res, Status.NoContent, None)
       }
 
       "return 404 when todo does not exist" in {
+        pending
+      }
+
+      "return 400 when ids do not match" in {
         pending
       }
     }
