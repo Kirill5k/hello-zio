@@ -69,7 +69,7 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
     "DELETE /api/todos/:id" should {
       "delete existing todo and return 204" in {
         val svc = mock[TodoService]
-        when(svc.delete(Todos.id)).thenReturn(IO.succeed(Todos.todo))
+        when(svc.delete(Todos.id)).thenReturn(IO.unit)
 
         val req = Request[RIO[Clock, *]](uri = Uri.unsafeFromString(s"/api/todos/${Todos.id.value}"), method = Method.DELETE)
         val res = routes(svc).flatMap(_.orNotFound.run(req))
