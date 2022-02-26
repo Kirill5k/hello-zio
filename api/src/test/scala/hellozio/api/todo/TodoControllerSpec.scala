@@ -83,11 +83,26 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
       }
 
       "return 404 when todo does not exist" in {
-        pending
+        val svc = mock[TodoService]
+        when(svc.update(Todos.todo)).thenReturn(IO.fail(AppError.TodoNotFound(Todos.id)))
+
+        val url     = Uri.unsafeFromString(s"/api/todos/${Todos.id.value}")
+        val reqBody = s"""{"id":"${Todos.id.value}","task":"${Todos.todo.task.value}","createdAt":"${Todos.todo.createdAt}"}"""
+        val req     = Request[RIO[Clock, *]](uri = url, method = Method.PUT).withEntity(reqBody)
+        val res     = routes(svc).flatMap(_.orNotFound.run(req))
+
+        val expectedRes = s"""{"message":"Todo with id ${Todos.id.value} does not exist"}"""
+        verifyJsonResponse(res, Status.NotFound, Some(expectedRes))
       }
 
       "return 400 when ids do not match" in {
-        pending
+        val url     = Uri.unsafeFromString(s"/api/todos/${Todos.id.value}")
+        val reqBody = s"""{"id":"${Todos.id.value}1","task":"update to do","createdAt":"$ts"}"""
+        val req     = Request[RIO[Clock, *]](uri = url, method = Method.PUT).withEntity(reqBody)
+        val res     = routes(mock[TodoService]).flatMap(_.orNotFound.run(req))
+
+        val expectedRes = s"""{"message":"id in path is different from id in request body"}"""
+        verifyJsonResponse(res, Status.BadRequest, Some(expectedRes))
       }
     }
 
