@@ -32,9 +32,8 @@ final private case class TodoConsumerLive(
 }
 
 object TodoConsumer {
-  lazy val layer: URLayer[AppConfig with Clock, TodoConsumer] = ZIO
+  lazy val layer: URLayer[AppConfig with Clock with Scope, TodoConsumer] = ZIO
     .serviceWith[AppConfig](_.kafka)
-    .toManaged
     .flatMap { config =>
       val settings = ConsumerSettings(
         keyDeserializer = Serde.todoIdDeserializer,
@@ -44,7 +43,7 @@ object TodoConsumer {
         .withGroupId(config.groupId)
       KafkaConsumer
         .resource(settings)
-        .toManagedZIO
+        .toScopedZIO
         .map(c => TodoConsumerLive(c, config.topic))
     }
     .orDie

@@ -28,10 +28,9 @@ final private case class TodoPublisherLive(
 
 object TodoPublisher extends Accessible[TodoPublisher] {
 
-  lazy val layer: URLayer[Clock with AppConfig, TodoPublisher] =
+  lazy val layer: URLayer[Clock with AppConfig with Scope, TodoPublisher] =
     ZIO
       .service[AppConfig]
-      .toManaged
       .flatMap { config =>
         val settings = ProducerSettings(
           keySerializer = Serde.todoIdSerializer,
@@ -39,7 +38,7 @@ object TodoPublisher extends Accessible[TodoPublisher] {
         ).withBootstrapServers(config.kafka.bootstrapServers)
         KafkaProducer
           .resource(settings)
-          .toManagedZIO
+          .toScopedZIO
           .map(producer => TodoPublisherLive(producer, config.kafka.topic))
       }
       .orDie

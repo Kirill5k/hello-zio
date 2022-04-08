@@ -24,5 +24,9 @@ final private case class TodoServiceLive(repository: TodoRepository, publisher: 
 }
 
 object TodoService extends Accessible[TodoService] {
-  lazy val layer: URLayer[TodoRepository with TodoPublisher, TodoService] = (TodoServiceLive(_, _)).toLayer
+  lazy val layer: URLayer[TodoRepository with TodoPublisher, TodoService] =
+    ZIO.service[TodoRepository]
+      .zip(ZIO.service[TodoPublisher])
+      .map { case (tr, tp) => TodoServiceLive(tr, tp)}
+      .toLayer
 }

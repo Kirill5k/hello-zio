@@ -4,16 +4,16 @@ object Dependencies {
 
   private object Versions {
     val circe          = "0.14.1"
-    val logback        = "1.2.10"
+    val logback        = "1.2.11"
     val pureconfig     = "0.17.1"
-    val tapir          = "0.20.0-M9"
-    val zio            = "2.0.0-RC2"
-    val zioInteropCats = "3.3.0-RC2"
-    val fs2Kafka       = "3.0.0-M4"
+    val tapir          = "1.0.0-M6"
+    val zio            = "2.0.0-RC4"
+    val zioInteropCats = "3.3.0-RC4"
+    val fs2Kafka       = "3.0.0-M7"
     val kafka          = "3.1.0"
-    val http4s         = "0.23.10"
+    val http4s         = "0.23.11"
 
-    val scalaTest = "3.2.10"
+    val scalaTest = "3.2.11"
     val mockito   = "3.2.10.0"
   }
 

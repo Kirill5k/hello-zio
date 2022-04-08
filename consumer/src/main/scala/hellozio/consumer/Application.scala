@@ -8,7 +8,7 @@ object Application extends ZIOAppDefault {
 
   val consumerLayer = AppConfig.layer ++ Clock.live >>> TodoConsumer.layer
 
-  override def run: URIO[zio.ZEnv, ExitCode] =
+  override def run: URIO[Scope, ExitCode] =
     TodoConsumer
       .updates
       .mapZIO(u => ZIO.logInfo(s"Received update $u"))

@@ -20,7 +20,7 @@ object kafka {
       Deserializer.instance[RIO[Clock, *], Todo.Id] { case (_, _, b) => RIO.succeed(Todo.Id(new String(b, StandardCharsets.UTF_8))) }
 
     implicit def jsonSerializer[A: Encoder]: Serializer[RIO[Clock, *], A] =
-      Serializer.instance[RIO[Clock, *], A] { case (_, _, a) => RIO(a.asJson.noSpaces.getBytes(StandardCharsets.UTF_8)) }
+      Serializer.instance[RIO[Clock, *], A] { case (_, _, a) => RIO.attempt(a.asJson.noSpaces.getBytes(StandardCharsets.UTF_8)) }
 
     implicit def jsonDeserializer[A: Decoder]: Deserializer[RIO[Clock, *], A] =
       Deserializer.instance[RIO[Clock, *], A] { case (_, _, a) => RIO.fromEither(decodeByteArray[A](a)) }

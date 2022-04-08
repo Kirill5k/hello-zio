@@ -21,7 +21,7 @@ trait TodoController {
   def routes: HttpRoutes[RIO[Clock, *]]
 }
 
-final private case class TodoControllerLive(service: TodoService, clock: Clock) extends TodoController with SchemaDerivation {
+final private case class TodoControllerLive(service: TodoService) extends TodoController with SchemaDerivation {
   implicit val todoIdEncoder: Encoder[Todo.Id]     = deriveUnwrappedEncoder
   implicit val todoIdDecoder: Decoder[Todo.Id]     = deriveUnwrappedDecoder
   implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
@@ -62,7 +62,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock) 
     .errorOut(error)
     .out(statusCode(StatusCode.Created).and(jsonBody[CreateTodoResponse]))
     .zServerLogic { req =>
-      clock.currentDateTime.map(_.toInstant).flatMap { now =>
+      ZIO.clockWith(_.instant).flatMap { now =>
         service
           .create(CreateTodo(Todo.Task(req.task), now))
           .mapError(ErrorResponse.from)
@@ -129,7 +129,8 @@ object TodoController {
   final case class CreateTodoRequest(task: String)
   final case class CreateTodoResponse(id: Todo.Id)
 
-  lazy val layer: URLayer[TodoService with Clock, TodoController] = (TodoControllerLive(_, _)).toLayer
+  lazy val layer: URLayer[TodoService, TodoController] =
+    ZIO.serviceWith[TodoService](ts => TodoControllerLive(ts)).toLayer
 
   def routes: URIO[TodoController, HttpRoutes[RIO[Clock, *]]] = ZIO.serviceWith[TodoController](_.routes)
 
