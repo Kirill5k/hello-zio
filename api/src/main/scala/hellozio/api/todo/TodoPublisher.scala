@@ -28,19 +28,21 @@ final private case class TodoPublisherLive(
 
 object TodoPublisher extends Accessible[TodoPublisher] {
 
-  lazy val layer: URLayer[Clock with AppConfig with Scope, TodoPublisher] =
-    ZIO
-      .service[AppConfig]
-      .flatMap { config =>
-        val settings = ProducerSettings(
-          keySerializer = Serde.todoIdSerializer,
-          valueSerializer = Serde.jsonSerializer[TodoUpdate]
-        ).withBootstrapServers(config.kafka.bootstrapServers)
-        KafkaProducer
-          .resource(settings)
-          .toScopedZIO
-          .map(producer => TodoPublisherLive(producer, config.kafka.topic))
-      }
-      .orDie
-      .toLayer
+  lazy val layer: URLayer[Clock with AppConfig, TodoPublisher] = {
+    ZLayer.scoped {
+      ZIO
+        .service[AppConfig]
+        .flatMap { config =>
+          val settings = ProducerSettings(
+            keySerializer = Serde.todoIdSerializer,
+            valueSerializer = Serde.jsonSerializer[TodoUpdate]
+          ).withBootstrapServers(config.kafka.bootstrapServers)
+          KafkaProducer
+            .resource(settings)
+            .toScopedZIO
+            .map(producer => TodoPublisherLive(producer, config.kafka.topic))
+        }
+        .orDie
+    }
+  }
 }

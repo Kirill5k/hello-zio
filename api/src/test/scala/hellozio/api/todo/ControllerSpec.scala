@@ -29,6 +29,6 @@ trait ControllerSpec extends AnyWordSpec with Matchers {
               receivedJson mustBe empty
             }
         }
-      }
+      }.provideLayer(Clock.live)
     )
 }

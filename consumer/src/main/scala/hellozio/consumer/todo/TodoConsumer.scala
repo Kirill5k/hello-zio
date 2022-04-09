@@ -32,22 +32,24 @@ final private case class TodoConsumerLive(
 }
 
 object TodoConsumer {
-  lazy val layer: URLayer[AppConfig with Clock with Scope, TodoConsumer] = ZIO
-    .serviceWith[AppConfig](_.kafka)
-    .flatMap { config =>
-      val settings = ConsumerSettings(
-        keyDeserializer = Serde.todoIdDeserializer,
-        valueDeserializer = Serde.jsonDeserializer[TodoUpdate]
-      ).withAutoOffsetReset(AutoOffsetReset.Latest)
-        .withBootstrapServers(config.bootstrapServers)
-        .withGroupId(config.groupId)
-      KafkaConsumer
-        .resource(settings)
-        .toScopedZIO
-        .map(c => TodoConsumerLive(c, config.topic))
+  lazy val layer: URLayer[AppConfig with Clock, TodoConsumer] =
+    ZLayer.scoped {
+      ZIO
+        .serviceWith[AppConfig](_.kafka)
+        .flatMap { config =>
+          val settings = ConsumerSettings(
+            keyDeserializer = Serde.todoIdDeserializer,
+            valueDeserializer = Serde.jsonDeserializer[TodoUpdate]
+          ).withAutoOffsetReset(AutoOffsetReset.Latest)
+            .withBootstrapServers(config.bootstrapServers)
+            .withGroupId(config.groupId)
+          KafkaConsumer
+            .resource(settings)
+            .toScopedZIO
+            .map(c => TodoConsumerLive(c, config.topic))
+        }
+        .orDie
     }
-    .orDie
-    .toLayer
 
   def updates: ZStream[TodoConsumer, AppError, TodoUpdate] = ZStream.serviceWithStream[TodoConsumer](_.updates)
 }
