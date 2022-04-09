@@ -10,7 +10,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import zio._
 import zio.interop.catz._
 
-import java.time.{Instant, OffsetDateTime, ZoneOffset}
+import java.time.Instant
 
 class TodoControllerSpec extends ControllerSpec with MockitoSugar {
 
@@ -132,7 +132,7 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
 
   def routes(service: TodoService): UIO[HttpRoutes[RIO[Clock, *]]] = {
     val clock = mock[Clock]
-    when(clock.currentDateTime(ArgumentMatchers.any[ZTraceElement]())).thenReturn(UIO.succeed(OffsetDateTime.ofInstant(ts, ZoneOffset.UTC)))
+    when(clock.instant(ArgumentMatchers.any[ZTraceElement]())).thenReturn(UIO.succeed(ts))
 
     TodoController.routes
       .provideLayer(ZLayer.succeed(service) ++ ZLayer.succeed(clock) >>> TodoController.layer)
