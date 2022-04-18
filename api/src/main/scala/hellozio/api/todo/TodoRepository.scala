@@ -42,5 +42,5 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
 }
 
 object TodoRepository extends Accessible[TodoRepository] {
-  lazy val inmemory: ULayer[TodoRepository] = Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory).toLayer
+  lazy val inmemory: ULayer[TodoRepository] = ZLayer(Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory))
 }
