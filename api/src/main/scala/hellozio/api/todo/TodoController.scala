@@ -11,14 +11,14 @@ import io.circe.generic.auto._
 import io.circe.generic.extras.semiauto._
 import org.http4s.HttpRoutes
 import sttp.model.StatusCode
-import sttp.tapir.generic.SchemaDerivation
+import sttp.tapir.generic.auto.SchemaDerivation
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.http4s.ztapir.ZHttp4sServerInterpreter
 import sttp.tapir.ztapir._
 import zio._
 
 trait TodoController {
-  def routes: HttpRoutes[RIO[Clock, *]]
+  def routes: HttpRoutes[Task]
 }
 
 final private case class TodoControllerLive(service: TodoService, clock: Clock) extends TodoController with SchemaDerivation {
@@ -91,8 +91,8 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock) 
         .flatMap(todo => service.update(todo).mapError(ErrorResponse.from))
     }
 
-  override def routes: HttpRoutes[RIO[Clock, *]] =
-    ZHttp4sServerInterpreter()
+  override def routes: HttpRoutes[Task] =
+    ZHttp4sServerInterpreter[Any]()
       .from(
         List(
           getAllTodos,
@@ -137,6 +137,6 @@ object TodoController {
         .map { case (s, c) => TodoControllerLive(s, c) }
     }
 
-  def routes: URIO[TodoController, HttpRoutes[RIO[Clock, *]]] = ZIO.serviceWith[TodoController](_.routes)
+  def routes: URIO[TodoController, HttpRoutes[Task]] = ZIO.serviceWith[TodoController](_.routes)
 
 }

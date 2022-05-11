@@ -6,14 +6,14 @@ object Dependencies {
     val circe          = "0.14.1"
     val logback        = "1.2.11"
     val pureconfig     = "0.17.1"
-    val tapir          = "1.0.0-M6"
-    val zio            = "2.0.0-RC5"
-    val zioInteropCats = "3.3.0-RC5"
+    val tapir          = "1.0.0-M9"
+    val zio            = "2.0.0-RC6"
+    val zioInteropCats = "3.3.0-RC7"
     val fs2Kafka       = "3.0.0-M7"
     val kafka          = "3.1.0"
     val http4s         = "0.23.11"
 
-    val scalaTest = "3.2.11"
+    val scalaTest = "3.2.12"
     val mockito   = "3.2.10.0"
   }
 

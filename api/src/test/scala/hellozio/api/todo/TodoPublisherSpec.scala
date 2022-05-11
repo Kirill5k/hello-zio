@@ -28,7 +28,7 @@ class TodoPublisherSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
           TodoUpdate.Deleted(Todos.id)
         )
 
-        Runtime.default.unsafeRun(ZIO.foreach(updates)(u => TodoPublisher(_.send(u))).provideLayer(layer))
+        Runtime.default.unsafeRun(ZIO.foreach(updates)(u => TodoPublisher.send(u)).provideLayer(layer))
 
         val msgs = consumeNumberStringMessagesFrom(topic, 3)
         msgs.flatMap(decode[TodoUpdate](_).toOption) mustBe updates

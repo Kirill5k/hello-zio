@@ -23,11 +23,18 @@ final private case class TodoServiceLive(repository: TodoRepository, publisher: 
     repository.update(todo).tap(_ => publisher.send(TodoUpdate.Updated(todo.id, todo)))
 }
 
-object TodoService extends Accessible[TodoService] {
+object TodoService {
   lazy val layer: URLayer[TodoRepository with TodoPublisher, TodoService] =
     ZLayer {
-      ZIO.service[TodoRepository]
+      ZIO
+        .service[TodoRepository]
         .zip(ZIO.service[TodoPublisher])
-        .map { case (tr, tp) => TodoServiceLive(tr, tp)}
+        .map { case (tr, tp) => TodoServiceLive(tr, tp) }
     }
+
+  def create(todo: CreateTodo): ZIO[TodoService, AppError, Todo.Id] = ZIO.serviceWithZIO[TodoService](_.create(todo))
+  def getAll: ZIO[TodoService, AppError, List[Todo]]                = ZIO.serviceWithZIO[TodoService](_.getAll)
+  def get(id: Todo.Id): ZIO[TodoService, AppError, Todo]            = ZIO.serviceWithZIO[TodoService](_.get(id))
+  def delete(id: Todo.Id): ZIO[TodoService, AppError, Unit]         = ZIO.serviceWithZIO[TodoService](_.delete(id))
+  def update(todo: Todo): ZIO[TodoService, AppError, Unit]          = ZIO.serviceWithZIO[TodoService](_.update(todo))
 }

@@ -17,8 +17,8 @@ object Application extends ZIOAppDefault {
       .service[AppConfig]
       .zip(TodoController.routes)
       .flatMap { case (config, routes) =>
-        BlazeServerBuilder[RIO[Clock, *]]
-          .withExecutionContext(runtime.runtimeConfig.executor.asExecutionContext)
+        BlazeServerBuilder[Task]
+          .withExecutionContext(runtime.executor.asExecutionContext)
           .bindHttp(config.server.port, config.server.host)
           .withHttpApp(Router("/" -> routes).orNotFound)
           .serve

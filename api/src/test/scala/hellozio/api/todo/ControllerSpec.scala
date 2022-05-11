@@ -11,7 +11,7 @@ import zio._
 trait ControllerSpec extends AnyWordSpec with Matchers {
 
   def verifyJsonResponse(
-      response: RIO[Clock, Response[RIO[Clock, *]]],
+      response: Task[Response[Task]],
       expectedStatus: Status,
       expectedBody: Option[String] = None
   ): Assertion =

@@ -26,9 +26,9 @@ final private case class TodoPublisherLive(
       .provideLayer(Clock.live)
 }
 
-object TodoPublisher extends Accessible[TodoPublisher] {
+object TodoPublisher {
 
-  lazy val layer: URLayer[Clock with AppConfig, TodoPublisher] = {
+  lazy val layer: URLayer[Clock with AppConfig, TodoPublisher] =
     ZLayer.scoped {
       ZIO
         .service[AppConfig]
@@ -44,5 +44,6 @@ object TodoPublisher extends Accessible[TodoPublisher] {
         }
         .orDie
     }
-  }
+
+  def send(update: TodoUpdate): ZIO[TodoPublisher, AppError, Unit] = ZIO.serviceWithZIO[TodoPublisher](_.send(update))
 }

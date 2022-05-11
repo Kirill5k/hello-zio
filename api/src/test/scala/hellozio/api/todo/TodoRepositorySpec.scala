@@ -13,7 +13,7 @@ class TodoRepositorySpec extends AsyncWordSpec with Matchers {
     "store todo in memory" in {
       val todo = Todos.genCreate()
 
-      val result = TodoRepository(_.create(todo)) *> TodoRepository(_.getAll.map(_.head))
+      val result = TodoRepository.create(todo) *> TodoRepository.getAll.map(_.head)
 
       Runtime.default
         .unsafeRunToFuture(result.provideLayer(TodoRepository.inmemory))
@@ -28,9 +28,9 @@ class TodoRepositorySpec extends AsyncWordSpec with Matchers {
 
       val result =
         for {
-          newTodo     <- TodoRepository(_.create(todo))
-          _           <- TodoRepository(_.update(newTodo.copy(task = Todo.Task("updated"))))
-          updatedTodo <- TodoRepository(_.get(newTodo.id))
+          newTodo     <- TodoRepository.create(todo)
+          _           <- TodoRepository.update(newTodo.copy(task = Todo.Task("updated")))
+          updatedTodo <- TodoRepository.get(newTodo.id)
         } yield updatedTodo
 
       Runtime.default
@@ -40,19 +40,19 @@ class TodoRepositorySpec extends AsyncWordSpec with Matchers {
 
     "return error when todo does not exist on get" in {
       Runtime.default
-        .unsafeRunToFuture(TodoRepository(_.get(Todos.id)).either.provideLayer(TodoRepository.inmemory))
+        .unsafeRunToFuture(TodoRepository.get(Todos.id).either.provideLayer(TodoRepository.inmemory))
         .map(_ mustBe Left(AppError.TodoNotFound(Todos.id)))
     }
 
     "return error when todo does not exist on delete" in {
       Runtime.default
-        .unsafeRunToFuture(TodoRepository(_.delete(Todos.id)).either.provideLayer(TodoRepository.inmemory))
+        .unsafeRunToFuture(TodoRepository.delete(Todos.id).either.provideLayer(TodoRepository.inmemory))
         .map(_ mustBe Left(AppError.TodoNotFound(Todos.id)))
     }
 
     "return error when todo does not exist on update" in {
       Runtime.default
-        .unsafeRunToFuture(TodoRepository(_.update(Todos.todo)).either.provideLayer(TodoRepository.inmemory))
+        .unsafeRunToFuture(TodoRepository.update(Todos.todo).either.provideLayer(TodoRepository.inmemory))
         .map(_ mustBe Left(AppError.TodoNotFound(Todos.id)))
     }
   }
