@@ -7,15 +7,13 @@ import hellozio.domain.todo.{TodoUpdate, Todos}
 import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import zio.{Clock, Runtime, ZIO, ZLayer}
+import zio.{Clock, Runtime, Unsafe, ZIO, ZLayer}
 
 class TodoPublisherSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
 
   val topic     = "todo-updates"
   val kafkaPort = 29092
   val appConfig = AppConfig(ServerConfig("0.0.0.0", 8080), KafkaConfig(s"localhost:$kafkaPort", topic))
-
-  val layer = (ZLayer.succeed(appConfig) ++ Clock.live) >>> TodoPublisher.layer
 
   "A TodoPublisher" should {
 
@@ -28,11 +26,20 @@ class TodoPublisherSpec extends AnyWordSpec with Matchers with EmbeddedKafka {
           TodoUpdate.Deleted(Todos.id)
         )
 
-        Runtime.default.unsafeRun(ZIO.foreach(updates)(u => TodoPublisher.send(u)).provideLayer(layer))
+        run(
+          ZIO
+            .foreach(updates)(u => TodoPublisher.send(u))
+            .provide(ZLayer.succeed(appConfig), TodoPublisher.layer, ZLayer.succeed(Clock.ClockLive))
+        )
 
         val msgs = consumeNumberStringMessagesFrom(topic, 3)
         msgs.flatMap(decode[TodoUpdate](_).toOption) mustBe updates
       }
     }
   }
+
+  def run[E, A](zio: ZIO[Any, E, A]): A =
+    Unsafe.unsafe { implicit u =>
+      Runtime.default.unsafe.run(zio).getOrThrowFiberFailure()
+    }
 }
