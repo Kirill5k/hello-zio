@@ -52,6 +52,8 @@ object Dependencies {
 
     val zio            = "dev.zio" %% "zio"              % Versions.zio
     val zioStreams     = "dev.zio" %% "zio-streams"      % Versions.zio
+    val zioTest        = "dev.zio" %% "zio-test"         % Versions.zio % Test
+    val zioTestSbt     = "dev.zio" %% "zio-test-sbt"     % Versions.zio % Test
     val zioInteropCats = "dev.zio" %% "zio-interop-cats" % Versions.zioInteropCats
 
     val scalaTest     = "org.scalatest"           %% "scalatest"      % Versions.scalaTest % Test
@@ -82,6 +84,8 @@ object Dependencies {
   val test = Seq(
     Libraries.scalaTest,
     Libraries.mockito,
-    Libraries.embeddedkafka
+    Libraries.embeddedkafka,
+    Libraries.zioTest,
+    Libraries.zioTestSbt
   )
 }
