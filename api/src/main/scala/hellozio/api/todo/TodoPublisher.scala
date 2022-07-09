@@ -23,12 +23,11 @@ final private case class TodoPublisherLive(
       .produce(ProducerRecords.one(ProducerRecord(topic, update.id, update)))
       .mapError(e => AppError.Kafka(e.getMessage))
       .unit
-      .provideLayer(Clock.live)
 }
 
 object TodoPublisher {
 
-  lazy val layer: URLayer[Clock with AppConfig, TodoPublisher] =
+  lazy val layer: URLayer[AppConfig, TodoPublisher] =
     ZLayer.scoped {
       ZIO
         .service[AppConfig]

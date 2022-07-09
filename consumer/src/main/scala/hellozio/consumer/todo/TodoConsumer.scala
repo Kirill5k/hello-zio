@@ -28,11 +28,10 @@ final private case class TodoConsumerLive(
       .toZStream()
       .mapZIO(c => c.offset.commit.as(c.record.value))
       .mapError(e => AppError.Kafka(e.getMessage))
-      .provideLayer(Clock.live)
 }
 
 object TodoConsumer {
-  lazy val layer: URLayer[AppConfig with Clock, TodoConsumer] =
+  lazy val layer: URLayer[AppConfig, TodoConsumer] =
     ZLayer.scoped {
       ZIO
         .serviceWith[AppConfig](_.kafka)

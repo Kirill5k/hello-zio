@@ -65,8 +65,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock) 
       clock.instant.flatMap { now =>
         service
           .create(CreateTodo(Todo.Task(req.task), now))
-          .mapError(ErrorResponse.from)
-          .map(CreateTodoResponse)
+          .mapBoth(ErrorResponse.from, CreateTodoResponse)
       }
     }
 

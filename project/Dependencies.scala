@@ -3,15 +3,15 @@ import sbt._
 object Dependencies {
 
   private object Versions {
-    val circe          = "0.14.1"
+    val circe          = "0.14.2"
     val logback        = "1.2.11"
     val pureconfig     = "0.17.1"
-    val tapir          = "1.0.0-M9"
-    val zio            = "2.0.0-RC6"
-    val zioInteropCats = "3.3.0-RC7"
+    val tapir          = "1.0.0-RC1"
+    val zio            = "2.0.0"
+    val zioInteropCats = "3.3.0"
     val fs2Kafka       = "3.0.0-M7"
     val kafka          = "3.1.0"
-    val http4s         = "0.23.11"
+    val http4s         = "0.23.12"
 
     val scalaTest = "3.2.12"
     val mockito   = "3.2.10.0"
@@ -59,19 +59,19 @@ object Dependencies {
     val embeddedkafka = "io.github.embeddedkafka" %% "embedded-kafka" % Versions.kafka     % Test
   }
 
-  lazy val api = Seq(
+  val api = Seq(
     Libraries.pureconfig,
     Libraries.logback,
     Libraries.http4s.blazeServer
   ) ++
     Libraries.tapir.all
 
-  lazy val consumer = Seq(
+  val consumer = Seq(
     Libraries.pureconfig,
     Libraries.logback
   )
 
-  lazy val domain = Seq(
+  val domain = Seq(
     Libraries.zio,
     Libraries.zioStreams,
     Libraries.zioInteropCats,
@@ -79,7 +79,7 @@ object Dependencies {
   ) ++
     Libraries.circe.all
 
-  lazy val test = Seq(
+  val test = Seq(
     Libraries.scalaTest,
     Libraries.mockito,
     Libraries.embeddedkafka
