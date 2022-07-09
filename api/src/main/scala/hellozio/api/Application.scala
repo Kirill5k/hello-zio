@@ -21,12 +21,13 @@ object Application extends ZIOAppDefault {
           .compile
           .drain
       }
-      .provideSome(
+      .provide(
         AppConfig.layer,
         TodoPublisher.layer,
         TodoRepository.inmemory,
         TodoService.layer,
-        TodoController.layer
+        TodoController.layer,
+        ZLayer.succeed(Clock.ClockLive)
       )
       .exitCode
 }

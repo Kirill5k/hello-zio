@@ -11,9 +11,10 @@ object Application extends ZIOAppDefault {
       .updates
       .mapZIO(u => ZIO.logInfo(s"Received update $u"))
       .runDrain
-      .provideSome(
+      .provide(
         AppConfig.layer,
-        TodoConsumer.layer
+        TodoConsumer.layer,
+        ZLayer.succeed(Clock.ClockLive)
       )
       .orDie
       .exitCode
