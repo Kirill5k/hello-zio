@@ -60,7 +60,8 @@ val api = project
     name       := "hello-zio-api",
     moduleName := "hello-zio-api",
     libraryDependencies ++= Dependencies.api ++ Dependencies.test,
-    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
+    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full)),
+    testFrameworks ++= Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
   )
 
 val root = project

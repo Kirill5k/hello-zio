@@ -2,29 +2,21 @@ package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{Todo, Todos}
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AsyncWordSpec
-import zio.{Runtime, Unsafe, ZIO}
+import zio.test.Assertion._
+import zio.test._
 
-import scala.concurrent.Future
+object TodoRepositorySpec extends ZIOSpecDefault {
 
-class TodoRepositorySpec extends AsyncWordSpec with Matchers {
-
-  "An InmemoryTodoRepository" should {
-
-    "store todo in memory" in {
-      val todo = Todos.genCreate()
-
+  def spec = suite("An InmemoryTodoRepository should")(
+    test("store todo in memory") {
+      val todo   = Todos.genCreate()
       val result = TodoRepository.create(todo) *> TodoRepository.getAll.map(_.head)
 
-      toFuture(result.provide(TodoRepository.inmemory))
-        .map { t =>
-          t.task mustBe todo.task
-          t.createdAt mustBe todo.createdAt
-        }
-    }
-
-    "update todo" in {
+      result.provide(TodoRepository.inmemory).map { t =>
+        assert(t.task)(equalTo(todo.task)) && assert(t.createdAt)(equalTo(todo.createdAt))
+      }
+    },
+    test("update todo") {
       val todo = Todos.genCreate()
 
       val result =
@@ -34,28 +26,21 @@ class TodoRepositorySpec extends AsyncWordSpec with Matchers {
           updatedTodo <- TodoRepository.get(newTodo.id)
         } yield updatedTodo
 
-      toFuture(result.provide(TodoRepository.inmemory))
-        .map(_.task mustBe Todo.Task("updated"))
+      result.provide(TodoRepository.inmemory).map { todo =>
+        assert(todo.task)(equalTo(Todo.Task("updated")))
+      }
+    },
+    test("return error when todo does not exist on get") {
+      val result = TodoRepository.get(Todos.id).provide(TodoRepository.inmemory)
+      assertZIO(result.exit)(fails(equalTo(AppError.TodoNotFound(Todos.id))))
+    },
+    test("return error when todo does not exist on delete") {
+      val result = TodoRepository.delete(Todos.id).provide(TodoRepository.inmemory)
+      assertZIO(result.exit)(fails(equalTo(AppError.TodoNotFound(Todos.id))))
+    },
+    test("return error when todo does not exist on update") {
+      val result = TodoRepository.update(Todos.todo).provide(TodoRepository.inmemory)
+      assertZIO(result.exit)(fails(equalTo(AppError.TodoNotFound(Todos.id))))
     }
-
-    "return error when todo does not exist on get" in {
-      toFuture(TodoRepository.get(Todos.id).either.provide(TodoRepository.inmemory))
-        .map(_ mustBe Left(AppError.TodoNotFound(Todos.id)))
-    }
-
-    "return error when todo does not exist on delete" in {
-      toFuture(TodoRepository.delete(Todos.id).either.provide(TodoRepository.inmemory))
-        .map(_ mustBe Left(AppError.TodoNotFound(Todos.id)))
-    }
-
-    "return error when todo does not exist on update" in {
-      toFuture(TodoRepository.update(Todos.todo).either.provide(TodoRepository.inmemory))
-        .map(_ mustBe Left(AppError.TodoNotFound(Todos.id)))
-    }
-  }
-
-  def toFuture[E <: Throwable, A](zio: ZIO[Any, E, A]): Future[A] =
-    Unsafe.unsafe { implicit u =>
-      Runtime.default.unsafe.runToFuture(zio).future
-    }
+  )
 }
