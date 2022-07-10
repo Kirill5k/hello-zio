@@ -26,7 +26,7 @@ object TodoControllerSpec extends ZIOSpecDefault with MockitoSugar {
         hasField[(Status, String), Either[ParsingFailure, Json]]("responseBody", r => parse(r._2), equalTo(parse(responseBody)))
     )
 
-  def spec = suite("A TodoController should")(
+  def spec = suite("A TodoController when")(
     suite("GET /api/todos")(
       test("return all todos") {
         val svc = mock[TodoService]
