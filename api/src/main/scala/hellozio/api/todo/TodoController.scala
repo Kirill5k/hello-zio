@@ -128,13 +128,7 @@ object TodoController {
   final case class CreateTodoRequest(task: String)
   final case class CreateTodoResponse(id: Todo.Id)
 
-  lazy val layer: URLayer[TodoService with Clock, TodoController] =
-    ZLayer {
-      ZIO
-        .service[TodoService]
-        .zip(ZIO.service[Clock])
-        .map { case (s, c) => TodoControllerLive(s, c) }
-    }
+  val layer: URLayer[TodoService with Clock, TodoController] = ZLayer.fromFunction(TodoControllerLive.apply _)
 
   def routes: URIO[TodoController, HttpRoutes[Task]] = ZIO.serviceWith[TodoController](_.routes)
 

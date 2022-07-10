@@ -18,19 +18,13 @@ final private case class TodoServiceLive(repository: TodoRepository, publisher: 
   override def create(todo: CreateTodo): IO[AppError, Todo.Id] =
     repository.create(todo).tap(todo => publisher.send(TodoUpdate.Created(todo.id, todo))).map(_.id)
   override def delete(id: Todo.Id): IO[AppError, Unit] =
-    repository.delete(id).tap(_ => publisher.send(TodoUpdate.Deleted(id)))
+    repository.delete(id).zipLeft(publisher.send(TodoUpdate.Deleted(id)))
   override def update(todo: Todo): IO[AppError, Unit] =
-    repository.update(todo).tap(_ => publisher.send(TodoUpdate.Updated(todo.id, todo)))
+    repository.update(todo).zipLeft(publisher.send(TodoUpdate.Updated(todo.id, todo)))
 }
 
 object TodoService {
-  lazy val layer: URLayer[TodoRepository with TodoPublisher, TodoService] =
-    ZLayer {
-      ZIO
-        .service[TodoRepository]
-        .zip(ZIO.service[TodoPublisher])
-        .map { case (tr, tp) => TodoServiceLive(tr, tp) }
-    }
+  val layer: URLayer[TodoRepository with TodoPublisher, TodoService] = ZLayer.fromFunction(TodoServiceLive.apply _)
 
   def create(todo: CreateTodo): ZIO[TodoService, AppError, Todo.Id] = ZIO.serviceWithZIO[TodoService](_.create(todo))
   def getAll: ZIO[TodoService, AppError, List[Todo]]                = ZIO.serviceWithZIO[TodoService](_.getAll)

@@ -27,8 +27,7 @@ final private case class TodoPublisherLive(
 }
 
 object TodoPublisher {
-
-  lazy val layer: URLayer[AppConfig with Clock, TodoPublisher] =
+  val layer: URLayer[AppConfig with Clock, TodoPublisher] =
     ZLayer.scoped {
       ZIO
         .service[AppConfig]
