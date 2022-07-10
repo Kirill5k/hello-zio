@@ -6,6 +6,7 @@ ThisBuild / version                             := scala.sys.process.Process("gi
 ThisBuild / organization                        := "io.github.kirill5k"
 ThisBuild / githubWorkflowPublishTargetBranches := Nil
 ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("18"))
+ThisBuild / testFrameworks ++= Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
 
 val noPublish = Seq(
   publish         := {},
@@ -60,8 +61,7 @@ val api = project
     name       := "hello-zio-api",
     moduleName := "hello-zio-api",
     libraryDependencies ++= Dependencies.api ++ Dependencies.test,
-    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full)),
-    testFrameworks ++= Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
+    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
   )
 
 val root = project

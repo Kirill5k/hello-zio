@@ -18,13 +18,11 @@ object TodoRepositorySpec extends ZIOSpecDefault {
     },
     test("update todo") {
       val todo = Todos.genCreate()
-
-      val result =
-        for {
-          newTodo     <- TodoRepository.create(todo)
-          _           <- TodoRepository.update(newTodo.copy(task = Todo.Task("updated")))
-          updatedTodo <- TodoRepository.get(newTodo.id)
-        } yield updatedTodo
+      val result = for {
+        newTodo     <- TodoRepository.create(todo)
+        _           <- TodoRepository.update(newTodo.copy(task = Todo.Task("updated")))
+        updatedTodo <- TodoRepository.get(newTodo.id)
+      } yield updatedTodo
 
       result.provide(TodoRepository.inmemory).map { todo =>
         assert(todo.task)(equalTo(Todo.Task("updated")))
