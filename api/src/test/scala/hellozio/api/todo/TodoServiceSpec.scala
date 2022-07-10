@@ -2,66 +2,48 @@ package hellozio.api.todo
 
 import hellozio.domain.todo.{TodoUpdate, Todos}
 import org.mockito.Mockito.when
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatestplus.mockito.MockitoSugar
-import zio.Runtime
 import zio._
+import zio.test.Assertion._
+import zio.test._
 
-import scala.concurrent.Future
+object TodoServiceSpec extends ZIOSpecDefault with MockitoSugar {
 
-class TodoServiceSpec extends AsyncWordSpec with Matchers with MockitoSugar {
-
-  "A TodoService" should {
-
-    "delete todo" in {
+  def spec = suite("A TodoService should")(
+    test("delete todo") {
       val (repo, pub) = mocks
       when(repo.delete(Todos.id)).thenReturn(ZIO.unit)
       when(pub.send(TodoUpdate.Deleted(Todos.id))).thenReturn(ZIO.unit)
 
-      toFuture(TodoService.delete(Todos.id).provideLayer(mockLayer(repo, pub)))
-        .map(_ mustBe (()))
-    }
-
-    "update todo" in {
+      assertZIO(TodoService.delete(Todos.id).provideLayer(mockLayer(repo, pub)))(isUnit)
+    },
+    test("update todo") {
       val (repo, pub) = mocks
       when(repo.update(Todos.todo)).thenReturn(ZIO.unit)
       when(pub.send(TodoUpdate.Updated(Todos.id, Todos.todo))).thenReturn(ZIO.unit)
 
-      toFuture(TodoService.update(Todos.todo).provideLayer(mockLayer(repo, pub)))
-        .map(_ mustBe (()))
-    }
-
-    "get todos from repository" in {
+      assertZIO(TodoService.update(Todos.todo).provideLayer(mockLayer(repo, pub)))(isUnit)
+    },
+    test("get todos from repository") {
       val (repo, pub) = mocks
       when(repo.getAll).thenReturn(ZIO.succeed(List(Todos.todo)))
 
-      toFuture(TodoService.getAll.provideLayer(mockLayer(repo, pub)))
-        .map(_ mustBe List(Todos.todo))
-    }
-
-    "get todo by id" in {
+      assertZIO(TodoService.getAll.provideLayer(mockLayer(repo, pub)))(hasSameElementsDistinct(List(Todos.todo)))
+    },
+    test("get todo by id") {
       val (repo, pub) = mocks
       when(repo.get(Todos.id)).thenReturn(ZIO.succeed(Todos.todo))
 
-      toFuture(TodoService.get(Todos.id).provideLayer(mockLayer(repo, pub)))
-        .map(_ mustBe Todos.todo)
-    }
-
-    "create new todo" in {
+      assertZIO(TodoService.get(Todos.id).provideLayer(mockLayer(repo, pub)))(equalTo(Todos.todo))
+    },
+    test("create new todo") {
       val (repo, pub) = mocks
       when(repo.create(Todos.create)).thenReturn(ZIO.succeed(Todos.todo))
       when(pub.send(TodoUpdate.Created(Todos.id, Todos.todo))).thenReturn(ZIO.unit)
 
-      toFuture(TodoService.create(Todos.create).provideLayer(mockLayer(repo, pub)))
-        .map(_ mustBe Todos.id)
+      assertZIO(TodoService.create(Todos.create).provideLayer(mockLayer(repo, pub)))(equalTo(Todos.id))
     }
-  }
-
-  def toFuture[E <: Throwable, A](zio: ZIO[Any, E, A]): Future[A] =
-    Unsafe.unsafe { implicit u =>
-      Runtime.default.unsafe.runToFuture(zio).future
-    }
+  )
 
   def mocks: (TodoRepository, TodoPublisher) =
     (mock[TodoRepository], mock[TodoPublisher])

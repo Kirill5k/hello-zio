@@ -1,7 +1,9 @@
 package hellozio.api.todo
 
+import io.circe.parser._
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{CreateTodo, Todo, Todos}
+import io.circe.{Json, ParsingFailure}
 import org.http4s._
 import org.http4s.implicits._
 import org.mockito.ArgumentMatchers
@@ -9,17 +11,24 @@ import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import zio._
 import zio.interop.catz._
+import zio.test._
+import zio.test.Assertion._
 
 import java.time.Instant
 
-class TodoControllerSpec extends ControllerSpec with MockitoSugar {
+object TodoControllerSpec extends ZIOSpecDefault with MockitoSugar {
 
   val ts = Instant.parse("2022-02-22T22:02:22Z")
 
-  "A TodoController" when {
+  def assertResponse(res: ZIO[Any, Throwable, Response[Task]])(status: Status, responseBody: String) =
+    assertZIO(res.flatMap(r => r.as[String].map(rb => r.status -> rb)))(
+      hasField[(Status, String), Status]("status", _._1, equalTo(status)) &&
+        hasField[(Status, String), Either[ParsingFailure, Json]]("responseBody", r => parse(r._2), equalTo(parse(responseBody)))
+    )
 
-    "GET /api/todos" should {
-      "return all todos" in {
+  def spec = suite("A TodoController should")(
+    suite("GET /api/todos")(
+      test("return all todos") {
         val svc = mock[TodoService]
         when(svc.getAll).thenReturn(ZIO.succeed(List(Todos.todo)))
 
@@ -27,12 +36,11 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val res = routes(svc).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""[{"id":"${Todos.todo.id.value}", "task":"task to do", "createdAt":"${Todos.todo.createdAt}"}]"""
-        verifyJsonResponse(res, Status.Ok, Some(expectedRes))
+        assertResponse(res)(Status.Ok, expectedRes)
       }
-    }
-
-    "GET /api/todos/:id" should {
-      "find todo by id" in {
+    ),
+    suite("GET /api/todos/:id")(
+      test("find todo by id") {
         val svc = mock[TodoService]
         when(svc.get(Todos.id)).thenReturn(ZIO.succeed(Todos.todo))
 
@@ -40,10 +48,9 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val res = routes(svc).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""{"id":"${Todos.todo.id.value}", "task":"task to do", "createdAt":"${Todos.todo.createdAt}"}"""
-        verifyJsonResponse(res, Status.Ok, Some(expectedRes))
-      }
-
-      "return 404 when todo does not exist" in {
+        assertResponse(res)(Status.Ok, expectedRes)
+      },
+      test("return 404 when todo does not exist") {
         val svc = mock[TodoService]
         when(svc.get(Todos.id)).thenReturn(ZIO.fail(AppError.TodoNotFound(Todos.id)))
 
@@ -51,12 +58,11 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val res = routes(svc).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""{"message":"Todo with id ${Todos.id.value} does not exist"}"""
-        verifyJsonResponse(res, Status.NotFound, Some(expectedRes))
+        assertResponse(res)(Status.NotFound, expectedRes)
       }
-    }
-
-    "POST /api/todos" should {
-      "create new todo" in {
+    ),
+    suite("POST /api/todos")(
+      test("create new todo") {
         val svc = mock[TodoService]
         when(svc.create(CreateTodo(Todo.Task("task todo"), ts))).thenReturn(ZIO.succeed(Todos.id))
 
@@ -65,12 +71,11 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val res     = routes(svc).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""{"id":"${Todos.todo.id.value}"}"""
-        verifyJsonResponse(res, Status.Created, Some(expectedRes))
+        assertResponse(res)(Status.Created, expectedRes)
       }
-    }
-
-    "PUT /api/todos/:id" should {
-      "update existing todo" in {
+    ),
+    suite("PUT /api/todos/:id")(
+      test("update existing todo") {
         val svc = mock[TodoService]
         when(svc.update(Todo(Todos.id, Todo.Task("update to do"), ts))).thenReturn(ZIO.unit)
 
@@ -78,11 +83,9 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val reqBody = s"""{"id":"${Todos.id.value}","task":"update to do","createdAt":"$ts"}"""
         val req     = Request[Task](uri = url, method = Method.PUT).withEntity(reqBody)
         val res     = routes(svc).flatMap(_.orNotFound.run(req))
-
-        verifyJsonResponse(res, Status.NoContent, None)
-      }
-
-      "return 404 when todo does not exist" in {
+        assertResponse(res)(Status.NoContent, "")
+      },
+      test("return 404 when todo does not exist") {
         val svc = mock[TodoService]
         when(svc.update(Todos.todo)).thenReturn(ZIO.fail(AppError.TodoNotFound(Todos.id)))
 
@@ -92,32 +95,29 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val res     = routes(svc).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""{"message":"Todo with id ${Todos.id.value} does not exist"}"""
-        verifyJsonResponse(res, Status.NotFound, Some(expectedRes))
-      }
-
-      "return 400 when ids do not match" in {
+        assertResponse(res)(Status.NotFound, expectedRes)
+      },
+      test("return 400 when ids do not match") {
         val url     = Uri.unsafeFromString(s"/api/todos/${Todos.id.value}")
         val reqBody = s"""{"id":"${Todos.id.value}1","task":"update to do","createdAt":"$ts"}"""
         val req     = Request[Task](uri = url, method = Method.PUT).withEntity(reqBody)
         val res     = routes(mock[TodoService]).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""{"message":"id in path is different from id in request body"}"""
-        verifyJsonResponse(res, Status.BadRequest, Some(expectedRes))
+        assertResponse(res)(Status.BadRequest, expectedRes)
       }
-    }
-
-    "DELETE /api/todos/:id" should {
-      "delete existing todo and return 204" in {
+    ),
+    suite("DELETE /api/todos/:id")(
+      test("delete existing todo and return 204") {
         val svc = mock[TodoService]
         when(svc.delete(Todos.id)).thenReturn(ZIO.unit)
 
         val req = Request[Task](uri = Uri.unsafeFromString(s"/api/todos/${Todos.id.value}"), method = Method.DELETE)
         val res = routes(svc).flatMap(_.orNotFound.run(req))
 
-        verifyJsonResponse(res, Status.NoContent, None)
-      }
-
-      "return 404 when todo does not exist" in {
+        assertResponse(res)(Status.NoContent, "")
+      },
+      test("return 404 when todo does not exist") {
         val svc = mock[TodoService]
         when(svc.delete(Todos.id)).thenReturn(ZIO.fail(AppError.TodoNotFound(Todos.id)))
 
@@ -125,10 +125,10 @@ class TodoControllerSpec extends ControllerSpec with MockitoSugar {
         val res = routes(svc).flatMap(_.orNotFound.run(req))
 
         val expectedRes = s"""{"message":"Todo with id ${Todos.id.value} does not exist"}"""
-        verifyJsonResponse(res, Status.NotFound, Some(expectedRes))
+        assertResponse(res)(Status.NotFound, expectedRes)
       }
-    }
-  }
+    )
+  )
 
   def routes(service: TodoService): UIO[HttpRoutes[Task]] = {
     val clock = mock[Clock]
