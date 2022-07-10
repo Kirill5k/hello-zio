@@ -10,7 +10,7 @@ object Dependencies {
     val zio            = "2.0.0"
     val zioInteropCats = "3.3.0"
     val fs2Kafka       = "3.0.0-M7"
-    val kafka          = "3.1.0"
+    val kafka          = "3.2.0"
     val http4s         = "0.23.12"
 
     val scalaTest = "3.2.12"
@@ -56,7 +56,6 @@ object Dependencies {
     val zioTestSbt     = "dev.zio" %% "zio-test-sbt"     % Versions.zio % Test
     val zioInteropCats = "dev.zio" %% "zio-interop-cats" % Versions.zioInteropCats
 
-    val scalaTest     = "org.scalatest"           %% "scalatest"      % Versions.scalaTest % Test
     val mockito       = "org.scalatestplus"       %% "mockito-3-4"    % Versions.mockito   % Test
     val embeddedkafka = "io.github.embeddedkafka" %% "embedded-kafka" % Versions.kafka     % Test
   }
@@ -82,7 +81,6 @@ object Dependencies {
     Libraries.circe.all
 
   val test = Seq(
-    Libraries.scalaTest,
     Libraries.mockito,
     Libraries.embeddedkafka,
     Libraries.zioTest,
