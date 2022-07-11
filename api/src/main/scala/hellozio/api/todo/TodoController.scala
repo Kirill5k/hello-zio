@@ -1,12 +1,10 @@
 package hellozio.api.todo
 
-import hellozio.domain.todo._
-import hellozio.domain.common.errors.AppError
-import hellozio.api.todo.TodoController.CreateTodoRequest
-import hellozio.api.todo.TodoController.CreateTodoResponse
-import hellozio.api.todo.TodoController.ErrorResponse
+import hellozio.api.todo.TodoController.{CreateTodoRequest, CreateTodoResponse, ErrorResponse}
 import hellozio.api.todo.TodoController.ErrorResponse.BadRequest
-import io.circe.{Decoder, Encoder}
+import hellozio.domain.common.errors.AppError
+import hellozio.domain.todo._
+import io.circe.Codec
 import io.circe.generic.auto._
 import io.circe.generic.extras.semiauto._
 import org.http4s.HttpRoutes
@@ -22,10 +20,8 @@ trait TodoController {
 }
 
 final private case class TodoControllerLive(service: TodoService, clock: Clock) extends TodoController with SchemaDerivation {
-  implicit val todoIdEncoder: Encoder[Todo.Id]     = deriveUnwrappedEncoder
-  implicit val todoIdDecoder: Decoder[Todo.Id]     = deriveUnwrappedDecoder
-  implicit val todoTaskEncoder: Encoder[Todo.Task] = deriveUnwrappedEncoder
-  implicit val todoTaskDecoder: Decoder[Todo.Task] = deriveUnwrappedDecoder
+  implicit val todoIdCodec: Codec[Todo.Id]     = deriveUnwrappedCodec
+  implicit val todoTaskCodec: Codec[Todo.Task] = deriveUnwrappedCodec
 
   private val basepath = "api" / "todos"
   private val itemPath = basepath / path[String].map(Todo.Id)(_.value)
