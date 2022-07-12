@@ -32,7 +32,7 @@ final private case class TodoConsumerLive(
 }
 
 object TodoConsumer {
-  lazy val layer: URLayer[AppConfig with Clock, TodoConsumer] =
+  val layer: URLayer[AppConfig with Clock, TodoConsumer] =
     ZLayer.scoped {
       ZIO
         .serviceWith[AppConfig](_.kafka)

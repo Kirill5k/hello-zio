@@ -16,14 +16,13 @@ object TodoConsumerSpec extends ZIOSpecDefault {
   val kafkaPort = 29095
   val appConfig = AppConfig(KafkaConfig(s"localhost:$kafkaPort", "todo-consumer", topic))
 
-  implicit val serializer: Serializer[String]     = new StringSerializer()
-  implicit val deserializer: Deserializer[String] = new StringDeserializer()
-  implicit val config: EmbeddedKafkaConfig        = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
+  given Serializer[String]   = new StringSerializer()
+  given Deserializer[String] = new StringDeserializer()
+  given EmbeddedKafkaConfig  = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
 
   def spec = suite("A TodoConsumer should")(
     test("consume todo updates") {
-      val todo = TodoUpdate.Created(Todos.id, Todos.todo)
-      for {
+      for
         _ <- ZIO.acquireRelease(ZIO.attempt(EmbeddedKafka.start()))(s => ZIO.attempt(EmbeddedKafka.stop(s)).orDie)
         fib <- TodoConsumer.updates
           .timeout(10.seconds)
@@ -31,11 +30,10 @@ object TodoConsumerSpec extends ZIOSpecDefault {
           .map(_.toList)
           .provide(ZLayer.succeed(appConfig), ZLayer.succeed(Clock.ClockLive), TodoConsumer.layer)
           .fork
-        _   <- ZIO.sleep(2.seconds)
+        todo = TodoUpdate.Created(Todos.id, Todos.todo)
         _   <- ZIO.attempt(EmbeddedKafka.publishToKafka(new ProducerRecord(topic, Todos.id.value, todo.asJson.noSpaces)))
-        _   <- ZIO.sleep(2.seconds)
         res <- fib.join
-      } yield assert(res)(equalTo(List(todo)))
+      yield assert(res)(equalTo(List(todo)))
     } @@ TestAspect.ignore
   )
 }
