@@ -42,7 +42,7 @@ final private case class TodoRepositoryInmemory(storage: Ref[Map[Todo.Id, Todo]]
 }
 
 object TodoRepository {
-  val inmemory: ULayer[TodoRepository] = ZLayer(Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory))
+  val inmemory: ULayer[TodoRepository] = ZLayer(Ref.make(Map.empty[Todo.Id, Todo]).map(TodoRepositoryInmemory.apply))
 
   def create(todo: CreateTodo): ZIO[TodoRepository, AppError, Todo] = ZIO.serviceWithZIO[TodoRepository](_.create(todo))
   def getAll: ZIO[TodoRepository, AppError, List[Todo]]             = ZIO.serviceWithZIO[TodoRepository](_.getAll)

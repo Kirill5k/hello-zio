@@ -1,8 +1,8 @@
 package hellozio.consumer.common
 
 import hellozio.domain.common.errors.AppError
-import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.*
+import pureconfig.generic.derivation.default.*
 import zio._
 
 object config {
@@ -11,9 +11,9 @@ object config {
       bootstrapServers: String,
       groupId: String,
       topic: String
-  )
+  ) derives ConfigReader
 
-  final case class AppConfig(kafka: KafkaConfig)
+  final case class AppConfig(kafka: KafkaConfig) derives ConfigReader
 
   object AppConfig {
     lazy val layer: Layer[AppError, AppConfig] =

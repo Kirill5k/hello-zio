@@ -18,7 +18,7 @@ object Dependencies {
   }
 
   private object Libraries {
-    val pureconfig = "com.github.pureconfig" %% "pureconfig"      % Versions.pureconfig
+    val pureconfig = "com.github.pureconfig" %% "pureconfig-core" % Versions.pureconfig
     val logback    = "ch.qos.logback"         % "logback-classic" % Versions.logback
     val fs2Kafka   = "com.github.fd4s"       %% "fs2-kafka"       % Versions.fs2Kafka
 
@@ -38,9 +38,9 @@ object Dependencies {
     }
 
     object circe {
-      val core    = "io.circe" %% "circe-core"           % Versions.circe
-      val generic = "io.circe" %% "circe-generic"        % Versions.circe
-      val parser  = "io.circe" %% "circe-parser"         % Versions.circe
+      val core    = "io.circe" %% "circe-core"    % Versions.circe
+      val generic = "io.circe" %% "circe-generic" % Versions.circe
+      val parser  = "io.circe" %% "circe-parser"  % Versions.circe
 
       val all = Seq(core, generic, parser)
     }
@@ -51,8 +51,8 @@ object Dependencies {
     val zioTestSbt     = "dev.zio" %% "zio-test-sbt"     % Versions.zio % Test
     val zioInteropCats = "dev.zio" %% "zio-interop-cats" % Versions.zioInteropCats
 
-    val mockito       = "org.scalatestplus"       %% "mockito-3-4"    % Versions.mockito   % Test
-    val embeddedkafka = "io.github.embeddedkafka" %% "embedded-kafka" % Versions.kafka     % Test
+    val mockito       = "org.scalatestplus"       %% "mockito-3-4"    % Versions.mockito % Test
+    val embeddedkafka = "io.github.embeddedkafka" %% "embedded-kafka" % Versions.kafka   % Test
   }
 
   val api = Seq(
@@ -77,7 +77,7 @@ object Dependencies {
 
   val test = Seq(
     Libraries.mockito,
-    Libraries.embeddedkafka,
+    Libraries.embeddedkafka.cross(CrossVersion.for3Use2_13),
     Libraries.zioTest,
     Libraries.zioTestSbt
   )

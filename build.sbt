@@ -1,7 +1,7 @@
 import com.typesafe.sbt.packager.docker._
 import sbtghactions.JavaSpec
 
-ThisBuild / scalaVersion                        := "2.13.8"
+ThisBuild / scalaVersion                        := "3.1.2"
 ThisBuild / version                             := scala.sys.process.Process("git rev-parse HEAD").!!.trim.slice(0, 7)
 ThisBuild / organization                        := "io.github.kirill5k"
 ThisBuild / githubWorkflowPublishTargetBranches := Nil
@@ -36,8 +36,7 @@ val domain = project
   .settings(
     name       := "hello-zio-domain",
     moduleName := "domain",
-    libraryDependencies ++= Dependencies.domain,
-    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
+    libraryDependencies ++= Dependencies.domain
   )
 
 val consumer = project
@@ -48,8 +47,7 @@ val consumer = project
   .settings(
     name       := "hello-zio-consumer",
     moduleName := "hello-zio-consumer",
-    libraryDependencies ++= Dependencies.consumer ++ Dependencies.test,
-    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
+    libraryDependencies ++= Dependencies.consumer ++ Dependencies.test
   )
 
 val api = project
@@ -60,8 +58,7 @@ val api = project
   .settings(
     name       := "hello-zio-api",
     moduleName := "hello-zio-api",
-    libraryDependencies ++= Dependencies.api ++ Dependencies.test,
-    addCompilerPlugin(("org.typelevel" % "kind-projector" % "0.13.2").cross(CrossVersion.full))
+    libraryDependencies ++= Dependencies.api ++ Dependencies.test
   )
 
 val root = project

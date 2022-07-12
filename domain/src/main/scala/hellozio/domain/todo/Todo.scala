@@ -1,5 +1,7 @@
 package hellozio.domain.todo
 
+import hellozio.domain.common.types.StringType
+
 import java.time.Instant
 
 final case class Todo(
@@ -9,8 +11,10 @@ final case class Todo(
 )
 
 object Todo {
-  final case class Id(value: String)   extends AnyVal
-  final case class Task(value: String) extends AnyVal
+  opaque type Id = String
+  object Id extends StringType[Id]
+  opaque type Task = String
+  object Task extends StringType[Task]
 }
 
 final case class CreateTodo(

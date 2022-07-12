@@ -3,29 +3,27 @@ package hellozio.api.todo
 import hellozio.api.todo.TodoController.{CreateTodoRequest, CreateTodoResponse, ErrorResponse}
 import hellozio.api.todo.TodoController.ErrorResponse.BadRequest
 import hellozio.domain.common.errors.AppError
-import hellozio.domain.todo._
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.auto._
+import hellozio.domain.todo.*
+import io.circe.generic.auto.*
 import org.http4s.HttpRoutes
 import sttp.model.StatusCode
+import sttp.tapir.Schema
 import sttp.tapir.generic.auto.SchemaDerivation
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.http4s.ztapir.ZHttp4sServerInterpreter
-import sttp.tapir.ztapir._
-import zio._
+import sttp.tapir.ztapir.*
+import zio.*
 
 trait TodoController {
   def routes: HttpRoutes[Task]
 }
 
 final private case class TodoControllerLive(service: TodoService, clock: Clock) extends TodoController with SchemaDerivation {
-  implicit val todoIdEncoder: Encoder[Todo.Id]     = Encoder.encodeString.contramap(_.value)
-  implicit val todoIdDecoder: Decoder[Todo.Id]     = Decoder.decodeString.map(Todo.Id.apply)
-  implicit val todoTaskEncoder: Encoder[Todo.Task] = Encoder.encodeString.contramap(_.value)
-  implicit val todoTaskDecoder: Decoder[Todo.Task] = Decoder.decodeString.map(Todo.Task.apply)
+  inline given Schema[Todo.Id]              = Schema.string
+  inline given Schema[Todo.Task]            = Schema.string
 
   private val basepath = "api" / "todos"
-  private val itemPath = basepath / path[String].map(Todo.Id)(_.value)
+  private val itemPath = basepath / path[String].map(Todo.Id.apply)(_.value)
 
   private val error = oneOf[ErrorResponse](
     oneOfVariant(StatusCode.BadRequest, jsonBody[ErrorResponse.BadRequest]),
@@ -62,7 +60,7 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock) 
       clock.instant.flatMap { now =>
         service
           .create(CreateTodo(Todo.Task(req.task), now))
-          .mapBoth(ErrorResponse.from, CreateTodoResponse)
+          .mapBoth(ErrorResponse.from, CreateTodoResponse.apply)
       }
     }
 
