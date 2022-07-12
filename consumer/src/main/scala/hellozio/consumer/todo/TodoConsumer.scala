@@ -17,6 +17,7 @@ trait TodoConsumer {
 
 final private case class TodoConsumerLive(
     consumer: KafkaConsumer[RIO[Clock, *], Todo.Id, TodoUpdate],
+    clock: Clock,
     topic: String
 ) extends TodoConsumer {
 
@@ -27,7 +28,7 @@ final private case class TodoConsumerLive(
       .toZStream()
       .mapZIO(c => c.offset.commit.as(c.record.value))
       .mapError(e => AppError.Kafka(e.getMessage))
-      .provideLayer(ZLayer.succeed(Clock.ClockLive))
+      .provideLayer(ZLayer.succeed(clock))
 }
 
 object TodoConsumer {
@@ -35,7 +36,8 @@ object TodoConsumer {
     ZLayer.scoped {
       ZIO
         .serviceWith[AppConfig](_.kafka)
-        .flatMap { config =>
+        .zip(ZIO.service[Clock])
+        .flatMap { (config, clock) =>
           val settings = ConsumerSettings(
             keyDeserializer = Serde.todoIdDeserializer,
             valueDeserializer = Serde.jsonDeserializer[TodoUpdate]
@@ -45,7 +47,7 @@ object TodoConsumer {
           KafkaConsumer
             .resource(settings)
             .toScopedZIO
-            .map(c => TodoConsumerLive(c, config.topic))
+            .map(c => TodoConsumerLive(c, clock, config.topic))
         }
         .orDie
     }
