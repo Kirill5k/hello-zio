@@ -44,6 +44,7 @@ object TodoConsumer {
           ).withAutoOffsetReset(AutoOffsetReset.Latest)
             .withBootstrapServers(config.bootstrapServers)
             .withGroupId(config.groupId)
+            .withAutoOffsetReset(AutoOffsetReset.Earliest)
           KafkaConsumer
             .resource(settings)
             .toScopedZIO
