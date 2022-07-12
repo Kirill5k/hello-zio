@@ -2,14 +2,13 @@ package hellozio.consumer.todo
 
 import hellozio.consumer.common.config.{AppConfig, KafkaConfig}
 import hellozio.domain.todo.{TodoUpdate, Todos}
-import io.circe.generic.auto._
-import io.circe.syntax._
+import io.circe.syntax.*
 import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
-import zio._
-import zio.test.Assertion._
-import zio.test._
+import zio.*
+import zio.test.Assertion.*
+import zio.test.*
 
 object TodoConsumerSpec extends ZIOSpecDefault {
 

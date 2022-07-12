@@ -5,9 +5,8 @@ import hellozio.api.common.config.AppConfig
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{Todo, TodoUpdate}
 import hellozio.domain.common.kafka.Serde
-import io.circe.generic.auto._
-import zio.interop.catz._
-import zio._
+import zio.interop.catz.*
+import zio.*
 
 trait TodoPublisher {
   def send(update: TodoUpdate): IO[AppError, Unit]

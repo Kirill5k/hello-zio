@@ -6,11 +6,10 @@ import hellozio.consumer.common.config.AppConfig
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.common.kafka.Serde
 import hellozio.domain.todo.{Todo, TodoUpdate}
-import io.circe.generic.auto._
-import zio.interop.catz._
+import zio.interop.catz.*
 import zio.stream.ZStream
-import zio.stream.interop.fs2z._
-import zio._
+import zio.stream.interop.fs2z.*
+import zio.*
 
 trait TodoConsumer {
   def updates: ZStream[Any, AppError, TodoUpdate]

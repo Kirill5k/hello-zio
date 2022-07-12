@@ -4,6 +4,7 @@ import hellozio.api.todo.TodoController.{CreateTodoRequest, CreateTodoResponse, 
 import hellozio.api.todo.TodoController.ErrorResponse.BadRequest
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.*
+import io.circe.Codec
 import io.circe.generic.auto.*
 import org.http4s.HttpRoutes
 import sttp.model.StatusCode
@@ -19,8 +20,8 @@ trait TodoController {
 }
 
 final private case class TodoControllerLive(service: TodoService, clock: Clock) extends TodoController with SchemaDerivation {
-  inline given Schema[Todo.Id]              = Schema.string
-  inline given Schema[Todo.Task]            = Schema.string
+  inline given Schema[Todo.Id]   = Schema.string
+  inline given Schema[Todo.Task] = Schema.string
 
   private val basepath = "api" / "todos"
   private val itemPath = basepath / path[String].map(Todo.Id.apply)(_.value)
@@ -107,10 +108,10 @@ object TodoController {
   }
 
   object ErrorResponse {
-    final case class InternalError(message: String) extends ErrorResponse
-    final case class NotFound(message: String)      extends ErrorResponse
-    final case class BadRequest(message: String)    extends ErrorResponse
-    final case class Unknown(message: String)       extends ErrorResponse
+    final case class InternalError(message: String) extends ErrorResponse derives Codec.AsObject
+    final case class NotFound(message: String)      extends ErrorResponse derives Codec.AsObject
+    final case class BadRequest(message: String)    extends ErrorResponse derives Codec.AsObject
+    final case class Unknown(message: String)       extends ErrorResponse derives Codec.AsObject
 
     def from(err: AppError): ErrorResponse =
       err match {
@@ -120,8 +121,8 @@ object TodoController {
 
   }
 
-  final case class CreateTodoRequest(task: String)
-  final case class CreateTodoResponse(id: Todo.Id)
+  final case class CreateTodoRequest(task: String) derives Codec.AsObject
+  final case class CreateTodoResponse(id: Todo.Id) derives Codec.AsObject
 
   val layer: URLayer[TodoService with Clock, TodoController] = ZLayer.fromFunction(TodoControllerLive.apply _)
 

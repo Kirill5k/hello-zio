@@ -3,7 +3,7 @@ package hellozio.consumer.common
 import hellozio.domain.common.errors.AppError
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
-import zio._
+import zio.*
 
 object config {
 

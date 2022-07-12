@@ -2,11 +2,10 @@ package hellozio.api.todo
 
 import hellozio.api.common.config.{AppConfig, KafkaConfig, ServerConfig}
 import hellozio.domain.todo.{TodoUpdate, Todos}
-import io.circe.generic.auto._
-import io.circe.parser._
+import io.circe.parser.*
 import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
-import zio.test.Assertion._
-import zio.test._
+import zio.test.Assertion.*
+import zio.test.*
 import zio.{Clock, ZIO, ZLayer}
 
 object TodoPublisherSpec extends ZIOSpecDefault {
