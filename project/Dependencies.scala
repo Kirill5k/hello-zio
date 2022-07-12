@@ -23,14 +23,10 @@ object Dependencies {
     val fs2Kafka   = "com.github.fd4s"       %% "fs2-kafka"       % Versions.fs2Kafka
 
     object http4s {
-      val core        = "org.http4s" %% "http4s-core"         % Versions.http4s
-      val dsl         = "org.http4s" %% "http4s-dsl"          % Versions.http4s
-      val server      = "org.http4s" %% "http4s-server"       % Versions.http4s
-      val blazeClient = "org.http4s" %% "http4s-blaze-client" % Versions.http4s
       val blazeServer = "org.http4s" %% "http4s-blaze-server" % Versions.http4s
       val circe       = "org.http4s" %% "http4s-circe"        % Versions.http4s
 
-      val all = Seq(core, dsl, server, blazeServer, circe)
+      val all = Seq(blazeServer, circe)
     }
 
     object tapir {
@@ -44,10 +40,9 @@ object Dependencies {
     object circe {
       val core    = "io.circe" %% "circe-core"           % Versions.circe
       val generic = "io.circe" %% "circe-generic"        % Versions.circe
-      val extras  = "io.circe" %% "circe-generic-extras" % Versions.circe
       val parser  = "io.circe" %% "circe-parser"         % Versions.circe
 
-      val all = Seq(core, generic, parser, extras)
+      val all = Seq(core, generic, parser)
     }
 
     val zio            = "dev.zio" %% "zio"              % Versions.zio
