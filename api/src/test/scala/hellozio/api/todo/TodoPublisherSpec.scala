@@ -16,7 +16,7 @@ object TodoPublisherSpec extends ZIOSpecDefault {
 
   def spec = suite("A TodoPublisher should")(
     test("publish todo updates to a topic") {
-      implicit val config = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
+      given EmbeddedKafkaConfig = EmbeddedKafkaConfig(kafkaPort = kafkaPort)
       for {
         _ <- ZIO.acquireRelease(ZIO.attempt(EmbeddedKafka.start()))(s => ZIO.attempt(EmbeddedKafka.stop(s)).orDie)
         updates = List(

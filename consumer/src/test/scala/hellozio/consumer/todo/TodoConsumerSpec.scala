@@ -24,8 +24,9 @@ object TodoConsumerSpec extends ZIOSpecDefault {
     test("consume todo updates") {
       for
         _ <- ZIO.acquireRelease(ZIO.attempt(EmbeddedKafka.start()))(s => ZIO.attempt(EmbeddedKafka.stop(s)).orDie)
+        _ <- TestClock.adjust(1.second)
         fib <- TodoConsumer.updates
-          .timeout(10.seconds)
+          .interruptAfter(10.seconds)
           .runCollect
           .map(_.toList)
           .provide(ZLayer.succeed(appConfig), ZLayer.succeed(Clock.ClockLive), TodoConsumer.layer)
@@ -34,6 +35,6 @@ object TodoConsumerSpec extends ZIOSpecDefault {
         _   <- ZIO.attempt(EmbeddedKafka.publishToKafka(new ProducerRecord(topic, Todos.id.value, todo.asJson.noSpaces)))
         res <- fib.join
       yield assert(res)(equalTo(List(todo)))
-    } @@ TestAspect.ignore
+    }
   )
 }
