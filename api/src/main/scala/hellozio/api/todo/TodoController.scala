@@ -4,8 +4,8 @@ import hellozio.api.todo.TodoController.{CreateTodoRequest, CreateTodoResponse, 
 import hellozio.api.todo.TodoController.ErrorResponse.BadRequest
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.*
-import io.circe.Codec
-import io.circe.generic.auto.*
+import io.circe.{Codec, CursorOp, Decoder, DecodingFailure, Encoder, Json}
+import io.circe.syntax.*
 import org.http4s.HttpRoutes
 import sttp.model.StatusCode
 import sttp.tapir.Schema
@@ -103,15 +103,15 @@ final private case class TodoControllerLive(service: TodoService, clock: Clock) 
 
 object TodoController {
 
-  sealed trait ErrorResponse extends Throwable {
+  sealed trait ErrorResponse(val kind: String) extends Throwable {
     def message: String
   }
 
   object ErrorResponse {
-    final case class InternalError(message: String) extends ErrorResponse derives Codec.AsObject
-    final case class NotFound(message: String)      extends ErrorResponse derives Codec.AsObject
-    final case class BadRequest(message: String)    extends ErrorResponse derives Codec.AsObject
-    final case class Unknown(message: String)       extends ErrorResponse derives Codec.AsObject
+    final case class InternalError(message: String) extends ErrorResponse("internal") derives Codec.AsObject
+    final case class NotFound(message: String)      extends ErrorResponse("not-found") derives Codec.AsObject
+    final case class BadRequest(message: String)    extends ErrorResponse("bad-request") derives Codec.AsObject
+    final case class Unknown(message: String)       extends ErrorResponse("unknown") derives Codec.AsObject
 
     def from(err: AppError): ErrorResponse =
       err match {
@@ -119,6 +119,24 @@ object TodoController {
         case e                        => ErrorResponse.InternalError(e.message)
       }
 
+    private val discriminatorField: String = "kind"
+
+    inline given Encoder[ErrorResponse] = Encoder.instance {
+      case e: NotFound      => Json.obj(discriminatorField -> Json.fromString(e.kind)).deepMerge(e.asJson)
+      case e: InternalError => Json.obj(discriminatorField -> Json.fromString(e.kind)).deepMerge(e.asJson)
+      case e: BadRequest    => Json.obj(discriminatorField -> Json.fromString(e.kind)).deepMerge(e.asJson)
+      case e: Unknown       => Json.obj(discriminatorField -> Json.fromString(e.kind)).deepMerge(e.asJson)
+    }
+
+    inline given Decoder[ErrorResponse] = Decoder.instance { c =>
+      c.downField(discriminatorField).as[String].flatMap {
+        case "not-found"   => c.as[NotFound]
+        case "bad-request" => c.as[BadRequest]
+        case "unknown"     => c.as[Unknown]
+        case "internal"    => c.as[InternalError]
+        case kind          => Left(DecodingFailure(s"Unexpected error response kind $kind", List(CursorOp.Field(discriminatorField))))
+      }
+    }
   }
 
   final case class CreateTodoRequest(task: String) derives Codec.AsObject
