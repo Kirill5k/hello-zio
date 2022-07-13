@@ -3,9 +3,9 @@ package hellozio.api.todo
 import hellozio.domain.todo.{TodoUpdate, Todos}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import zio._
-import zio.test.Assertion._
-import zio.test._
+import zio.*
+import zio.test.Assertion.*
+import zio.test.*
 
 object TodoServiceSpec extends ZIOSpecDefault with MockitoSugar {
 

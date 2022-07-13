@@ -4,21 +4,24 @@ import io.circe.parser._
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{CreateTodo, Todo, Todos}
 import io.circe.{Json, ParsingFailure}
-import org.http4s._
-import org.http4s.implicits._
+import org.http4s.*
+import org.http4s.implicits.*
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import zio._
-import zio.interop.catz._
-import zio.test._
-import zio.test.Assertion._
+import zio.*
+import zio.interop.catz.*
+import zio.test.*
+import zio.test.Assertion.*
 
 import java.time.Instant
 
 object TodoControllerSpec extends ZIOSpecDefault with MockitoSugar {
 
   val ts = Instant.parse("2022-02-22T22:02:22Z")
+
+  def assertEmptyResponse(res: ZIO[Any, Throwable, Response[Task]])(status: Status) =
+    assertResponse(res)(status, "")
 
   def assertResponse(res: ZIO[Any, Throwable, Response[Task]])(status: Status, responseBody: String) =
     assertZIO(res.flatMap(r => r.as[String].map(rb => r.status -> rb)))(
@@ -83,7 +86,7 @@ object TodoControllerSpec extends ZIOSpecDefault with MockitoSugar {
         val reqBody = s"""{"id":"${Todos.id.value}","task":"update to do","createdAt":"$ts"}"""
         val req     = Request[Task](uri = url, method = Method.PUT).withEntity(reqBody)
         val res     = routes(svc).flatMap(_.orNotFound.run(req))
-        assertResponse(res)(Status.NoContent, "")
+        assertEmptyResponse(res)(Status.NoContent)
       },
       test("return 404 when todo does not exist") {
         val svc = mock[TodoService]
@@ -115,7 +118,7 @@ object TodoControllerSpec extends ZIOSpecDefault with MockitoSugar {
         val req = Request[Task](uri = Uri.unsafeFromString(s"/api/todos/${Todos.id.value}"), method = Method.DELETE)
         val res = routes(svc).flatMap(_.orNotFound.run(req))
 
-        assertResponse(res)(Status.NoContent, "")
+        assertEmptyResponse(res)(Status.NoContent)
       },
       test("return 404 when todo does not exist") {
         val svc = mock[TodoService]

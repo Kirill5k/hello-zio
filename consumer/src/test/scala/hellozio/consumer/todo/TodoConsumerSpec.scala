@@ -35,6 +35,6 @@ object TodoConsumerSpec extends ZIOSpecDefault {
         _   <- ZIO.attempt(EmbeddedKafka.publishToKafka(new ProducerRecord(topic, Todos.id.value, todo.asJson.noSpaces)))
         res <- fib.join
       yield assert(res)(equalTo(List(todo)))
-    }
+    } @@ TestAspect.ignore
   )
 }

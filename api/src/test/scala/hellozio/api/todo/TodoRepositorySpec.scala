@@ -2,8 +2,8 @@ package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{Todo, Todos}
-import zio.test.Assertion._
-import zio.test._
+import zio.test.Assertion.*
+import zio.test.*
 
 object TodoRepositorySpec extends ZIOSpecDefault {
 
