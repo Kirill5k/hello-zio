@@ -2,7 +2,7 @@ package hellozio.consumer
 
 import hellozio.consumer.common.config.AppConfig
 import hellozio.consumer.todo.TodoConsumer
-import zio._
+import zio.*
 
 object Application extends ZIOAppDefault {
 

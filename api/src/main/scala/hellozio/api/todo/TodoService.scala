@@ -2,7 +2,7 @@ package hellozio.api.todo
 
 import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{CreateTodo, Todo, TodoUpdate}
-import zio._
+import zio.*
 
 trait TodoService {
   def create(todo: CreateTodo): IO[AppError, Todo.Id]

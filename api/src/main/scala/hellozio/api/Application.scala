@@ -4,8 +4,8 @@ import hellozio.api.common.config.AppConfig
 import hellozio.api.todo.{TodoController, TodoPublisher, TodoRepository, TodoService}
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.Router
-import zio._
-import zio.interop.catz._
+import zio.*
+import zio.interop.catz.*
 
 object Application extends ZIOAppDefault {
 

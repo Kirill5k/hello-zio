@@ -4,7 +4,7 @@ import hellozio.domain.common.errors.AppError
 import hellozio.domain.todo.{CreateTodo, Todo}
 
 import java.util.UUID
-import zio._
+import zio.*
 
 trait TodoRepository {
   def create(todo: CreateTodo): IO[AppError, Todo]
