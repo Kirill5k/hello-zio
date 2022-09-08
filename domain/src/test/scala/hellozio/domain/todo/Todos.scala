@@ -1,6 +1,7 @@
 package hellozio.domain.todo
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 object Todos {
@@ -11,7 +12,7 @@ object Todos {
 
   def genId: Todo.Id = Todo.Id(UUID.randomUUID().toString)
 
-  def genCreate(task: Todo.Task = Todo.Task("task to do")): CreateTodo = CreateTodo(task, Instant.now())
+  def genCreate(task: Todo.Task = Todo.Task("task to do")): CreateTodo = CreateTodo(task, Instant.now().truncatedTo(ChronoUnit.MILLIS))
 
   def gen(
       id: Todo.Id = genId,
