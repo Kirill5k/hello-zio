@@ -12,6 +12,7 @@ object Dependencies {
     val fs2Kafka       = "3.0.0-M7"
     val kafka          = "3.2.0"
     val http4s         = "0.23.12"
+    val mongo4cats     = "0.6.1"
 
     val scalaTest = "3.2.12"
     val mockito   = "3.2.10.0"
@@ -21,6 +22,14 @@ object Dependencies {
     val pureconfig = "com.github.pureconfig" %% "pureconfig-core" % Versions.pureconfig
     val logback    = "ch.qos.logback"         % "logback-classic" % Versions.logback
     val fs2Kafka   = "com.github.fd4s"       %% "fs2-kafka"       % Versions.fs2Kafka
+
+    object mongo4cats {
+      val zio      = "io.github.kirill5k" %% "mongo4cats-zio"          % Versions.mongo4cats excludeAll(ExclusionRule(organization = "org.scala-lang.modules"))
+      val circe    = "io.github.kirill5k" %% "mongo4cats-circe"        % Versions.mongo4cats excludeAll(ExclusionRule(organization = "org.scala-lang.modules"))
+      val embedded = "io.github.kirill5k" %% "mongo4cats-zio-embedded" % Versions.mongo4cats % Test
+
+      val all = Seq(zio, circe, embedded)
+    }
 
     object http4s {
       val blazeServer = "org.http4s" %% "http4s-blaze-server" % Versions.http4s
@@ -60,7 +69,8 @@ object Dependencies {
     Libraries.logback,
     Libraries.http4s.blazeServer
   ) ++
-    Libraries.tapir.all
+    Libraries.tapir.all ++
+    Libraries.mongo4cats.all
 
   val consumer = Seq(
     Libraries.pureconfig,
